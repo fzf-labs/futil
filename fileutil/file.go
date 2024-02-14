@@ -14,8 +14,3 @@ var (
 	// OnlyReadFileFlags 只读
 	OnlyReadFileFlags = os.O_RDONLY
 )
-
-const (
-	// MimeSniffLen 嗅探长度，用于检测文件 mime 类型
-	MimeSniffLen = 512
-)

@@ -1,91 +1,29 @@
 package conv
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"math"
+	"html/template"
+	"io"
 	"reflect"
 	"strconv"
 	"time"
 
-	"github.com/fzf-labs/fpkg/binary"
-	"github.com/fzf-labs/fpkg/reflection"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
-// Byte converts `any` to byte.
-func Byte(any any) byte {
-	if v, ok := any.(byte); ok {
-		return v
-	}
-	return Uint8(any)
-}
-
-// Bytes converts `any` to []byte.
-func Bytes(any any) []byte {
-	if any == nil {
-		return nil
-	}
-	switch value := any.(type) {
-	case string:
-		return []byte(value)
-
-	case []byte:
-		return value
-
-	default:
-		originValueAndKind := reflection.OriginValueAndKind(any)
-		switch originValueAndKind.OriginKind {
-		case reflect.Map:
-			bytes, err := json.Marshal(any)
-			if err != nil {
-				return nil
-			}
-			return bytes
-
-		case reflect.Array, reflect.Slice:
-			var (
-				ok    = true
-				bytes = make([]byte, originValueAndKind.OriginValue.Len())
-			)
-			for i := range bytes {
-				int32Value := Int32(originValueAndKind.OriginValue.Index(i).Interface())
-				if int32Value < 0 || int32Value > math.MaxUint8 {
-					ok = false
-					break
-				}
-				bytes[i] = byte(int32Value)
-			}
-			if ok {
-				return bytes
-			}
-		}
-		return binary.Encode(any)
-	}
-}
-
-// Rune converts `any` to rune.
-func Rune(any any) rune {
-	if v, ok := any.(rune); ok {
-		return v
-	}
-	return Int32(any)
-}
-
-// Runes converts `any` to []rune.
-func Runes(any any) []rune {
-	if v, ok := any.([]rune); ok {
-		return v
-	}
-	return []rune(String(any))
-}
-
 // String converts `any` to string.
-// It's most commonly used converting function.
 func String(any any) string {
 	if any == nil {
 		return ""
 	}
 	switch value := any.(type) {
+	case nil:
+		return ""
+	case bool:
+		return strconv.FormatBool(value)
 	case int:
 		return strconv.Itoa(value)
 	case int8:
@@ -110,12 +48,10 @@ func String(any any) string {
 		return strconv.FormatFloat(float64(value), 'f', -1, 32)
 	case float64:
 		return strconv.FormatFloat(value, 'f', -1, 64)
-	case bool:
-		return strconv.FormatBool(value)
-	case string:
-		return value
 	case []byte:
 		return string(value)
+	case string:
+		return value
 	case time.Time:
 		if value.IsZero() {
 			return ""
@@ -126,38 +62,54 @@ func String(any any) string {
 			return ""
 		}
 		return value.String()
+	case json.Number:
+		return value.String()
+	case template.HTML:
+		return string(value)
+	case template.URL:
+		return string(value)
+	case template.JS:
+		return string(value)
+	case template.CSS:
+		return string(value)
+	case template.HTMLAttr:
+		return string(value)
+	case fmt.Stringer:
+		return value.String()
+	case error:
+		return value.Error()
 	default:
-		// Empty checks.
-		if value == nil {
+		// Reflect checks.
+		rv := reflect.ValueOf(value)
+		kind := rv.Kind()
+		if (kind == reflect.Chan || kind == reflect.Map || kind == reflect.Slice || kind == reflect.Func || kind == reflect.Ptr || kind == reflect.Interface || kind == reflect.UnsafePointer) && rv.IsNil() {
 			return ""
 		}
-		// Reflect checks.
-		var (
-			rv   = reflect.ValueOf(value)
-			kind = rv.Kind()
-		)
-		switch kind {
-		case reflect.Chan,
-			reflect.Map,
-			reflect.Slice,
-			reflect.Func,
-			reflect.Ptr,
-			reflect.Interface,
-			reflect.UnsafePointer:
-			if rv.IsNil() {
-				return ""
-			}
-		case reflect.String:
+		if kind == reflect.String {
 			return rv.String()
 		}
 		if kind == reflect.Ptr {
 			return String(rv.Elem().Interface())
 		}
 		// Finally, we use json.Marshal to convert.
-		if jsonContent, err := json.Marshal(value); err != nil {
+		jsonMarshal, err := json.Marshal(value)
+		if err != nil {
 			return fmt.Sprint(value)
-		} else {
-			return string(jsonContent)
 		}
+		return string(jsonMarshal)
 	}
+}
+
+// Utf8ToGbk convert utf8 encoding data to GBK encoding data.
+func Utf8ToGbk(bs []byte) ([]byte, error) {
+	r := transform.NewReader(bytes.NewReader(bs), simplifiedchinese.GBK.NewEncoder())
+	b, err := io.ReadAll(r)
+	return b, err
+}
+
+// GbkToUtf8 convert GBK encoding data to utf8 encoding data.
+func GbkToUtf8(bs []byte) ([]byte, error) {
+	r := transform.NewReader(bytes.NewReader(bs), simplifiedchinese.GBK.NewDecoder())
+	b, err := io.ReadAll(r)
+	return b, err
 }

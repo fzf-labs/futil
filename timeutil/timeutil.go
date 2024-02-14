@@ -17,7 +17,7 @@ func Carbon() carbon.Carbon {
 	return carbon.NewCarbon().SetTimezone(carbon.PRC)
 }
 func Time2Carbon(t time.Time) carbon.Carbon {
-	return carbon.Time2Carbon(t).SetTimezone(carbon.PRC)
+	return carbon.CreateFromStdTime(t).SetTimezone(carbon.PRC)
 }
 
 func NowCarbon() carbon.Carbon {
@@ -25,7 +25,7 @@ func NowCarbon() carbon.Carbon {
 }
 
 func NowTime() time.Time {
-	return carbon.Now().Carbon2Time()
+	return carbon.Now().ToStdTime()
 }
 
 func NowUnix() int64 {
@@ -60,12 +60,12 @@ func TimeToYearMonthString(ts time.Time) string {
 }
 
 func ToDateTimeStringByTime(ts time.Time) string {
-	return carbon.Time2Carbon(ts).ToDateTimeString()
+	return carbon.CreateFromStdTime(ts).ToDateTimeString()
 }
 
 func ToDateTimeStringByTimePointer(ts *time.Time) string {
 	if ts != nil {
-		return carbon.Time2Carbon(*ts).ToDateTimeString()
+		return carbon.CreateFromStdTime(*ts).ToDateTimeString()
 	} else {
 		return ""
 	}

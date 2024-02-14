@@ -115,7 +115,8 @@ func MimeType(p string) (mime string) {
 
 // ReaderMimeType 获取文件 Mime 类型名称
 func ReaderMimeType(r io.Reader) (mime string) {
-	var buf [MimeSniffLen]byte
+	// 512 嗅探长度，用于检测文件 mime 类型
+	var buf [512]byte
 	n, _ := io.ReadFull(r, buf[:])
 	if n == 0 {
 		return ""

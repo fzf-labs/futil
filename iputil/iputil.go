@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -99,19 +98,11 @@ func isIntranet(ipStr string) bool {
 // GetLocalIP 获取本机内网IP
 func GetLocalIP() string {
 	localIP := "127.0.0.1"
-	// sync.Once 是在代码运行中需要的时候执行，且只执行一次
-	var once sync.Once
-	once.Do(func() {
-		ips, _ := IntranetIP()
-		if len(ips) > 0 {
-			localIP = ips[0]
-		}
-	})
+	ips, _ := IntranetIP()
+	if len(ips) > 0 {
+		localIP = ips[0]
+	}
 	return localIP
-}
-
-type IPInfo struct {
-	Origin string `json:"origin"`
 }
 
 // GetPublicIPByHTTP 获取公网ip
@@ -128,6 +119,9 @@ func GetPublicIPByHTTP() (string, error) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
+	}
+	type IPInfo struct {
+		Origin string `json:"origin"`
 	}
 	var ipInfo IPInfo
 	err = json.Unmarshal(body, &ipInfo)
@@ -233,7 +227,6 @@ func RemoteIP(r *http.Request) string {
 	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
 		return ip
 	}
-
 	return ""
 }
 

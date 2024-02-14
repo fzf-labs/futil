@@ -1,23 +1,90 @@
 package conv
 
-import "reflect"
+import (
+	"encoding/json"
+	"reflect"
+	"strings"
+	"time"
+)
 
-func Bool[T any](value T) bool {
-	switch m := any(value).(type) {
-	case interface{ Bool() bool }:
-		return m.Bool()
-	case interface{ IsZero() bool }:
-		return !m.IsZero()
+var (
+	emptyStringMap = map[string]struct{}{
+		"":      {},
+		"0":     {},
+		"no":    {},
+		"off":   {},
+		"false": {},
 	}
-	return reflectValue(&value)
-}
+)
 
-func reflectValue(vp any) bool {
-	switch rv := reflect.ValueOf(vp).Elem(); rv.Kind() {
-	case reflect.Map, reflect.Slice:
-		return rv.Len() != 0
+// Bool converts `any` to bool.
+func Bool(any interface{}) (bool, error) {
+	switch b := any.(type) {
+	case nil:
+		return false, nil
+	case bool:
+		return b, nil
+	case int:
+		return b != 0, nil
+	case int64:
+		return b != 0, nil
+	case int32:
+		return b != 0, nil
+	case int16:
+		return b != 0, nil
+	case int8:
+		return b != 0, nil
+	case uint:
+		return b != 0, nil
+	case uint64:
+		return b != 0, nil
+	case uint32:
+		return b != 0, nil
+	case uint16:
+		return b != 0, nil
+	case uint8:
+		return b != 0, nil
+	case float64:
+		return b != 0, nil
+	case float32:
+		return b != 0, nil
+	case time.Duration:
+		return b != 0, nil
+	case []byte:
+		if _, ok := emptyStringMap[strings.ToLower(string(b))]; ok {
+			return false, nil
+		}
+		return true, nil
+	case string:
+		if _, ok := emptyStringMap[strings.ToLower(b)]; ok {
+			return false, nil
+		}
+		return true, nil
+	case json.Number:
+		j, err := b.Int64()
+		if err != nil {
+			return false, err
+		}
+		return j != 0, nil
+	case interface{ Bool() bool }:
+		return b.Bool(), nil
+	case interface{ IsZero() bool }:
+		return !b.IsZero(), nil
 	default:
-		is := rv.IsZero()
-		return !is
+		rv := reflect.ValueOf(any)
+		switch rv.Kind() {
+		case reflect.Ptr:
+			return !rv.IsNil(), nil
+		case reflect.Map:
+			fallthrough
+		case reflect.Array:
+			fallthrough
+		case reflect.Slice:
+			return rv.Len() != 0, nil
+		case reflect.Struct:
+			return true, nil
+		default:
+			return !rv.IsZero(), nil
+		}
 	}
 }

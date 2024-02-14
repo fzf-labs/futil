@@ -1,4 +1,4 @@
-package itfpkg
+package itfutil
 
 import (
 	"bytes"

@@ -21,7 +21,6 @@ func ColorRGBToHex(red, green, blue int) string {
 	r := strconv.FormatInt(int64(red), 16)
 	g := strconv.FormatInt(int64(green), 16)
 	b := strconv.FormatInt(int64(blue), 16)
-
 	if len(r) == 1 {
 		r = "0" + r
 	}
@@ -31,6 +30,5 @@ func ColorRGBToHex(red, green, blue int) string {
 	if len(b) == 1 {
 		b = "0" + b
 	}
-
 	return "#" + r + g + b
 }
