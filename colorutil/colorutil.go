@@ -6,14 +6,14 @@ import (
 )
 
 // ColorHexToRGB 将十六进制颜色转换为 RGB 颜色
-func ColorHexToRGB(colorHex string) (red, green, blue int) {
+func ColorHexToRGB(colorHex string) (red, green, blue int, err error) {
 	colorHex = strings.TrimPrefix(colorHex, "#")
 	color64, err := strconv.ParseInt(colorHex, 16, 32)
 	if err != nil {
-		return
+		return 0, 0, 0, err
 	}
 	color := int(color64)
-	return color >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF
+	return color >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF, nil
 }
 
 // ColorRGBToHex 将 RGB 颜色转换为十六进制颜色
