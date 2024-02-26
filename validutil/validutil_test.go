@@ -1,19 +1,10 @@
-package strutil
+package validutil
 
-import (
-	"testing"
+import "testing"
 
-	"github.com/stretchr/testify/assert"
-)
-
-func TestIsEmpty(t *testing.T) {
-	assert.Equal(t, IsEmpty(""), true)
-	assert.Equal(t, IsEmpty("a"), false)
-}
-
-func TestIsNumeric(t *testing.T) {
+func TestIsZero(t *testing.T) {
 	type args struct {
-		s string
+		any any
 	}
 	tests := []struct {
 		name string
@@ -21,70 +12,95 @@ func TestIsNumeric(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "case true",
+			name: "case nil",
 			args: args{
-				s: "123",
+				any: nil,
 			},
 			want: true,
 		},
 		{
-			name: "case false",
+			name: "case string true",
 			args: args{
-				s: "abc",
+				any: "",
+			},
+			want: true,
+		},
+		{
+			name: "case string false",
+			args: args{
+				any: "8",
+			},
+			want: false,
+		},
+		{
+			name: "case int true",
+			args: args{
+				any: int(0),
+			},
+			want: true,
+		},
+		{
+			name: "case int false",
+			args: args{
+				any: int(1),
+			},
+			want: false,
+		},
+		{
+			name: "case uint true",
+			args: args{
+				any: uint(0),
+			},
+			want: true,
+		},
+		{
+			name: "case uint false",
+			args: args{
+				any: uint(1),
+			},
+			want: false,
+		},
+		{
+			name: "case slice true",
+			args: args{
+				any: []string{},
+			},
+			want: true,
+		},
+		{
+			name: "case slice false",
+			args: args{
+				any: []string{"8"},
+			},
+			want: false,
+		},
+		{
+			name: "case float64 true",
+			args: args{
+				any: float64(0),
+			},
+			want: true,
+		},
+		{
+			name: "case float64 false",
+			args: args{
+				any: float64(8),
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsNumeric(tt.args.s), "IsNumeric(%v)", tt.args.s)
-		})
-	}
-}
-
-func TestIsAlpha(t *testing.T) {
-	type args struct {
-		str string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "case true",
-			args: args{
-				str: "a",
-			},
-			want: true,
-		},
-		{
-			name: "case false",
-			args: args{
-				str: "0",
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := IsAlpha(tt.args.str); got != tt.want {
-				t.Errorf("IsAlpha() = %v, want %v", got, tt.want)
+			if got := IsZero(tt.args.any); got != tt.want {
+				t.Errorf("IsZero() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestIsAlphaNumeric(t *testing.T) {
-	assert.Equal(t, IsAlphaNumeric("哈哈"), false)
-	assert.Equal(t, IsAlphaNumeric("abc"), true)
-	assert.Equal(t, IsAlphaNumeric("123"), true)
-	assert.Equal(t, IsAlphaNumeric("ABc123"), true)
-}
-
-func TestIsAllUpperAlpha(t *testing.T) {
+func TestIsIP(t *testing.T) {
 	type args struct {
-		str string
+		ipStr string
 	}
 	tests := []struct {
 		name string
@@ -94,30 +110,30 @@ func TestIsAllUpperAlpha(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				str: "ABC",
+				ipStr: "127.250.255.254",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				str: "ABc",
+				ipStr: "123",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsAllUpperAlpha(tt.args.str); got != tt.want {
-				t.Errorf("IsAllUpperAlpha() = %v, want %v", got, tt.want)
+			if got := IsIP(tt.args.ipStr); got != tt.want {
+				t.Errorf("IsIP() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestIsAllLowerAlpha(t *testing.T) {
+func TestIsIPV4(t *testing.T) {
 	type args struct {
-		str string
+		ipStr string
 	}
 	tests := []struct {
 		name string
@@ -127,30 +143,30 @@ func TestIsAllLowerAlpha(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				str: "abc",
+				ipStr: "127.250.255.254",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				str: "ABc",
+				ipStr: "123",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsAllLowerAlpha(tt.args.str); got != tt.want {
-				t.Errorf("IsAllLowerAlpha() = %v, want %v", got, tt.want)
+			if got := IsIPV4(tt.args.ipStr); got != tt.want {
+				t.Errorf("IsIPV4() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestIsContainAlpha(t *testing.T) {
+func TestIsIPV6(t *testing.T) {
 	type args struct {
-		str string
+		ipStr string
 	}
 	tests := []struct {
 		name string
@@ -160,30 +176,30 @@ func TestIsContainAlpha(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				str: "ABc123",
+				ipStr: "FC00:0000:130F:0000:0000:09C0:876A:130B",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				str: "123",
+				ipStr: "123",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsContainAlpha(tt.args.str); got != tt.want {
-				t.Errorf("IsContainAlpha() = %v, want %v", got, tt.want)
+			if got := IsIPV6(tt.args.ipStr); got != tt.want {
+				t.Errorf("IsIPV6() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestIsContainUpperAlpha(t *testing.T) {
+func TestIsPort(t *testing.T) {
 	type args struct {
-		str string
+		port int
 	}
 	tests := []struct {
 		name string
@@ -193,28 +209,28 @@ func TestIsContainUpperAlpha(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				str: "ABc123",
+				port: 3306,
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				str: "ccc123",
+				port: 0,
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsContainUpperAlpha(tt.args.str); got != tt.want {
-				t.Errorf("IsContainUpperAlpha() = %v, want %v", got, tt.want)
+			if got := IsPort(tt.args.port); got != tt.want {
+				t.Errorf("IsPort() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestIsContainLowerAlpha(t *testing.T) {
+func TestIsURL(t *testing.T) {
 	type args struct {
 		str string
 	}
@@ -226,35 +242,30 @@ func TestIsContainLowerAlpha(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				str: "ABc123",
+				str: "www.baidu.com",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				str: "ABC123",
+				str: "123456",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsContainLowerAlpha(tt.args.str); got != tt.want {
-				t.Errorf("IsContainLowerAlpha() = %v, want %v", got, tt.want)
+			if got := IsURL(tt.args.str); got != tt.want {
+				t.Errorf("IsURL() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestIsContainChineseChar(t *testing.T) {
-	assert.True(t, IsContainChinese("我爱中国"))
-	assert.False(t, IsContainChinese("a"))
-}
-
-func TestIsFloatStr(t *testing.T) {
+func TestIsEmail(t *testing.T) {
 	type args struct {
-		str string
+		email string
 	}
 	tests := []struct {
 		name string
@@ -264,28 +275,30 @@ func TestIsFloatStr(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				str: "0.123",
+				email: "123456@qq.com",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				str: "abc",
+				email: "",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsFloatStr(tt.args.str), "IsFloatStr(%v)", tt.args.str)
+			if got := IsEmail(tt.args.email); got != tt.want {
+				t.Errorf("IsEmail() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestIsIntStr(t *testing.T) {
+func TestIsPhoneTight(t *testing.T) {
 	type args struct {
-		str string
+		phone string
 	}
 	tests := []struct {
 		name string
@@ -295,59 +308,30 @@ func TestIsIntStr(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				str: "123",
-			},
-			want: true,
-		},
-		{
-			name: "case true",
-			args: args{
-				str: "abc",
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsIntStr(tt.args.str), "IsIntStr(%v)", tt.args.str)
-		})
-	}
-}
-
-func TestIsChinese(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "case true",
-			args: args{
-				s: "我爱中国",
+				phone: "18888888888",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				s: "abc",
+				phone: "12888888888",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsChinese(tt.args.s), "IsChinese(%v)", tt.args.s)
+			if got := IsPhoneTight(tt.args.phone); got != tt.want {
+				t.Errorf("IsPhoneTight() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestIsContainChinese(t *testing.T) {
+func TestIsPhoneLoose(t *testing.T) {
 	type args struct {
-		str string
+		phone string
 	}
 	tests := []struct {
 		name string
@@ -357,28 +341,30 @@ func TestIsContainChinese(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				str: "我爱中国",
+				phone: "18888888888",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				str: "abc",
+				phone: "12888888888",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsContainChinese(tt.args.str), "IsContainChinese(%v)", tt.args.str)
+			if got := IsPhoneLoose(tt.args.phone); got != tt.want {
+				t.Errorf("IsPhoneLoose() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestIsBase64(t *testing.T) {
+func TestIsTelephone(t *testing.T) {
 	type args struct {
-		base64 string
+		telephone string
 	}
 	tests := []struct {
 		name string
@@ -388,28 +374,30 @@ func TestIsBase64(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				base64: "YWJj",
+				telephone: "07552000000",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				base64: "abc",
+				telephone: "",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsBase64(tt.args.base64), "IsBase64(%v)", tt.args.base64)
+			if got := IsTelephone(tt.args.telephone); got != tt.want {
+				t.Errorf("IsTelephone() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestIsValidUtf8(t *testing.T) {
+func TestIsPostalCode(t *testing.T) {
 	type args struct {
-		s string
+		postalCode string
 	}
 	tests := []struct {
 		name string
@@ -419,28 +407,30 @@ func TestIsValidUtf8(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				s: "abc",
+				postalCode: "518000",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				s: "\xFB\xBF\xBF\xBF\xBF",
+				postalCode: "",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsValidUtf8(tt.args.s), "IsValidUtf8(%v)", tt.args.s)
+			if got := IsPostalCode(tt.args.postalCode); got != tt.want {
+				t.Errorf("IsPostalCode() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestIsRuneWord(t *testing.T) {
+func TestIsResidentID(t *testing.T) {
 	type args struct {
-		c rune
+		id string
 	}
 	tests := []struct {
 		name string
@@ -450,28 +440,30 @@ func TestIsRuneWord(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				c: 'a',
+				id: "230101198910059687",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				c: 0,
+				id: "",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsRuneWord(tt.args.c), "IsRuneWord(%v)", tt.args.c)
+			if got := IsResidentID(tt.args.id); got != tt.want {
+				t.Errorf("IsResidentID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestIsRuneLower(t *testing.T) {
+func TestIsQQ(t *testing.T) {
 	type args struct {
-		c rune
+		qq string
 	}
 	tests := []struct {
 		name string
@@ -481,28 +473,28 @@ func TestIsRuneLower(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				c: 'a',
+				qq: "123456",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
-			args: args{
-				c: 0,
-			},
+			args: args{},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsRuneLower(tt.args.c), "IsRuneLower(%v)", tt.args.c)
+			if got := IsQQ(tt.args.qq); got != tt.want {
+				t.Errorf("IsQQ() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestIsRuneUpper(t *testing.T) {
+func TestIsPassport(t *testing.T) {
 	type args struct {
-		c rune
+		p string
 	}
 	tests := []struct {
 		name string
@@ -512,61 +504,31 @@ func TestIsRuneUpper(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				c: 'A',
+				p: "E12345678",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				c: 0,
+				p: "",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, IsRuneUpper(tt.args.c), "IsRuneUpper(%v)", tt.args.c)
-		})
-	}
-}
-func TestNoCaseEq(t *testing.T) {
-	type args struct {
-		s string
-		t string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "case true",
-			args: args{
-				s: "a",
-				t: "A",
-			},
-			want: true,
-		},
-		{
-			name: "case false",
-			args: args{
-				s: "a",
-				t: "1",
-			},
-			want: false,
-		}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, NoCaseEq(tt.args.s, tt.args.t), "NoCaseEq(%v, %v)", tt.args.s, tt.args.t)
+			if got := IsPassport(tt.args.p); got != tt.want {
+				t.Errorf("IsPassport() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestHasOneSub(t *testing.T) {
+func TestIsWeakPassword(t *testing.T) {
 	type args struct {
-		s    string
-		subs []string
+		password string
+		length   int
 	}
 	tests := []struct {
 		name string
@@ -576,31 +538,33 @@ func TestHasOneSub(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				s:    "abcdef",
-				subs: []string{"a", "b"},
+				password: "123456",
+				length:   6,
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				s:    "abcdef",
-				subs: []string{"i"},
+				password: "123456789+",
+				length:   6,
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, HasOneSub(tt.args.s, tt.args.subs), "HasOneSub(%v, %v)", tt.args.s, tt.args.subs)
+			if got := IsWeakPassword(tt.args.password, tt.args.length); got != tt.want {
+				t.Errorf("IsWeakPassword() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestHasAllSubs(t *testing.T) {
+func TestIsStrongPassword(t *testing.T) {
 	type args struct {
-		s    string
-		subs []string
+		password string
+		length   int
 	}
 	tests := []struct {
 		name string
@@ -610,31 +574,32 @@ func TestHasAllSubs(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				s:    "abc",
-				subs: []string{"a", "b", "c"},
+				password: "Abc123!@#",
+				length:   6,
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				s:    "abc",
-				subs: []string{"a", "b"},
+				password: "123456",
+				length:   6,
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, HasAllSubs(tt.args.s, tt.args.subs), "HasAllSubs(%v, %v)", tt.args.s, tt.args.subs)
+			if got := IsStrongPassword(tt.args.password, tt.args.length); got != tt.want {
+				t.Errorf("IsStrongPassword() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
 
-func TestHasOnePrefix(t *testing.T) {
+func TestIsDomain(t *testing.T) {
 	type args struct {
-		s        string
-		prefixes []string
+		p string
 	}
 	tests := []struct {
 		name string
@@ -644,23 +609,56 @@ func TestHasOnePrefix(t *testing.T) {
 		{
 			name: "case true",
 			args: args{
-				s:        "abc",
-				prefixes: []string{"a", "b"},
+				p: "www.baidu.com",
 			},
 			want: true,
 		},
 		{
 			name: "case false",
 			args: args{
-				s:        "abc",
-				prefixes: []string{"c"},
+				p: "",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, HasOnePrefix(tt.args.s, tt.args.prefixes), "HasOnePrefix(%v, %v)", tt.args.s, tt.args.prefixes)
+			if got := IsDomain(tt.args.p); got != tt.want {
+				t.Errorf("IsDomain() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsMac(t *testing.T) {
+	type args struct {
+		p string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "case true",
+			args: args{
+				p: "5E-05-83-86-46-EF",
+			},
+			want: true,
+		},
+		{
+			name: "case false",
+			args: args{
+				p: "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsMac(tt.args.p); got != tt.want {
+				t.Errorf("IsMac() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

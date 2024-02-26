@@ -23,8 +23,8 @@ func StrToLower(str string) string {
 	return string(runeArr)
 }
 
-// ConcatString 连接字符串,性能比fmt.Sprintf和+号要好
-func ConcatString(s ...string) string {
+// StrConcat 连接字符串,性能比fmt.Sprintf和+号要好
+func StrConcat(s ...string) string {
 	if len(s) == 0 {
 		return ""
 	}
@@ -33,6 +33,36 @@ func ConcatString(s ...string) string {
 		buffer.WriteString(i)
 	}
 	return buffer.String()
+}
+
+// SubStr 截取字符串，并返回实际截取的长度和子串
+func SubStr(str string, start, end int64) (sub string, err error) {
+	reader := strings.NewReader(str)
+	// Calling NewSectionReader method with its parameters
+	r := io.NewSectionReader(reader, start, end)
+	// Calling Copy method with its parameters
+	var buf bytes.Buffer
+	_, err = io.Copy(&buf, r)
+	sub = buf.String()
+	return sub, err
+}
+
+// SubStrReturnLeft 截取并返回left部分
+func SubStrReturnLeft(str, target string) string {
+	pos := strings.Index(str, target)
+	if pos == -1 {
+		return ""
+	}
+	return str[:pos]
+}
+
+// SubStrReturnRight 截取并返回right部分
+func SubStrReturnRight(str, target string) string {
+	pos := strings.Index(str, target)
+	if pos == -1 {
+		return ""
+	}
+	return str[pos+len(target):]
 }
 
 // StringToUint64 字符串转uint64
@@ -44,7 +74,6 @@ func StringToUint64(str string) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	return uint64(valInt), nil
 }
 
@@ -57,7 +86,6 @@ func StringToInt64(str string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	return int64(valInt), nil
 }
 
@@ -70,50 +98,14 @@ func StringToInt(str string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	return valInt, nil
 }
 
-// Bytes2String 字节切片转字符串
-func Bytes2String(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
-}
-
-// String2Bytes 字符串转字节切片
-func String2Bytes(s string) []byte {
-	x := (*[2]uintptr)(unsafe.Pointer(&s))
+// StringToBytes 字符串转字节切片
+func StringToBytes(str string) []byte {
+	x := (*[2]uintptr)(unsafe.Pointer(&str))
 	h := [3]uintptr{x[0], x[1], x[1]}
 	return *(*[]byte)(unsafe.Pointer(&h))
-}
-
-// SubStr 截取字符串，并返回实际截取的长度和子串
-func SubStr(str string, start, end int64) (n int64, sub string, err error) {
-	reader := strings.NewReader(str)
-	// Calling NewSectionReader method with its parameters
-	r := io.NewSectionReader(reader, start, end)
-	// Calling Copy method with its parameters
-	var buf bytes.Buffer
-	n, err = io.Copy(&buf, r)
-	sub = buf.String()
-	return n, sub, err
-}
-
-// SubstrReturnLeft 截取并返回left部分
-func SubstrReturnLeft(str, target string) (string, bool) {
-	pos := strings.Index(str, target)
-	if pos == -1 {
-		return "", false
-	}
-	return str[:pos], true
-}
-
-// SubstrReturnRight 截取并返回right部分
-func SubstrReturnRight(str, target string) (string, bool) {
-	pos := strings.Index(str, target)
-	if pos == -1 {
-		return "", false
-	}
-	return str[pos+len(target):], true
 }
 
 // Utf8StringLen 获得字符串按照uft8编码的长度
@@ -144,106 +136,45 @@ func Utf8Index(str, substr string) int {
 	return utf8.RuneCountInString(str[:index])
 }
 
-// JoinStringAndOther 连接字符串和其他类型
-func JoinStringAndOther(val ...any) string {
-	return fmt.Sprint(val...)
-}
-
 // UcFirst 首字母大写
-func UcFirst(s string) string {
-	if s == "" {
-		return s
+func UcFirst(str string) string {
+	if str == "" {
+		return str
 	}
 
-	rs := []rune(s)
+	rs := []rune(str)
 	f := rs[0]
 
 	if 'a' <= f && f <= 'z' {
 		return string(unicode.ToUpper(f)) + string(rs[1:])
 	}
-	return s
+	return str
 }
 
 // LcFirst 首字母小写
-func LcFirst(s string) string {
-	if s == "" {
-		return s
+func LcFirst(str string) string {
+	if str == "" {
+		return str
 	}
 
-	rs := []rune(s)
+	rs := []rune(str)
 	f := rs[0]
 
 	if 'A' <= f && f <= 'Z' {
 		return string(unicode.ToLower(f)) + string(rs[1:])
 	}
-	return s
-}
-
-// FormatPrivateKey 格式化 普通应用秘钥
-func FormatPrivateKey(privateKey string) (pKey string) {
-	var buffer strings.Builder
-	buffer.WriteString("-----BEGIN RSA PRIVATE KEY-----\n")
-	rawLen := 64
-	keyLen := len(privateKey)
-	raws := keyLen / rawLen
-	temp := keyLen % rawLen
-	if temp > 0 {
-		raws++
-	}
-	start := 0
-	end := start + rawLen
-	for i := 0; i < raws; i++ {
-		if i == raws-1 {
-			buffer.WriteString(privateKey[start:])
-		} else {
-			buffer.WriteString(privateKey[start:end])
-		}
-		buffer.WriteByte('\n')
-		start += rawLen
-		end = start + rawLen
-	}
-	buffer.WriteString("-----END RSA PRIVATE KEY-----\n")
-	pKey = buffer.String()
-	return
-}
-
-// FormatPublicKey 格式化 普通支付宝公钥
-func FormatPublicKey(publicKey string) (pKey string) {
-	var buffer strings.Builder
-	buffer.WriteString("-----BEGIN PUBLIC KEY-----\n")
-	rawLen := 64
-	keyLen := len(publicKey)
-	raws := keyLen / rawLen
-	temp := keyLen % rawLen
-	if temp > 0 {
-		raws++
-	}
-	start := 0
-	end := start + rawLen
-	for i := 0; i < raws; i++ {
-		if i == raws-1 {
-			buffer.WriteString(publicKey[start:])
-		} else {
-			buffer.WriteString(publicKey[start:end])
-		}
-		buffer.WriteByte('\n')
-		start += rawLen
-		end = start + rawLen
-	}
-	buffer.WriteString("-----END PUBLIC KEY-----\n")
-	pKey = buffer.String()
-	return
+	return str
 }
 
 // CamelCase 将字符串转换为驼峰式字符串。
-func CamelCase(s string) string {
-	if s == "" {
+func CamelCase(str string) string {
+	if str == "" {
 		return ""
 	}
 	result := ""
 	blankSpace := " "
 	regex := regexp.MustCompile("[-_&]+")
-	ss := regex.ReplaceAllString(s, blankSpace)
+	ss := regex.ReplaceAllString(str, blankSpace)
 	for i, v := range strings.Split(ss, blankSpace) {
 		vv := []rune(v)
 		if i == 0 {
@@ -260,31 +191,29 @@ func CamelCase(s string) string {
 }
 
 // Capitalize 将字符串的第一个字符转换为大写，其余字符转换为小写。
-func Capitalize(s string) string {
-	if s == "" {
+func Capitalize(str string) string {
+	if str == "" {
 		return ""
 	}
-
-	out := make([]rune, len(s))
-	for i, v := range s {
+	out := make([]rune, len(str))
+	for i, v := range str {
 		if i == 0 {
 			out[i] = unicode.ToUpper(v)
 		} else {
 			out[i] = unicode.ToLower(v)
 		}
 	}
-
 	return string(out)
 }
 
 // KebabCase 将字符串转换为 kebab-case
-func KebabCase(s string) string {
-	if s == "" {
+func KebabCase(str string) string {
+	if str == "" {
 		return ""
 	}
 	regex := regexp.MustCompile(`[\W_]+`)
 	blankSpace := " "
-	match := regex.ReplaceAllString(s, blankSpace)
+	match := regex.ReplaceAllString(str, blankSpace)
 	rs := strings.Split(match, blankSpace)
 	var result []string
 	for _, v := range rs {
@@ -297,13 +226,13 @@ func KebabCase(s string) string {
 }
 
 // SnakeCase 将字符串转换为蛇形大小写
-func SnakeCase(s string) string {
-	if s == "" {
+func SnakeCase(str string) string {
+	if str == "" {
 		return ""
 	}
 	regex := regexp.MustCompile(`[\W_]+`)
 	blankSpace := " "
-	match := regex.ReplaceAllString(s, blankSpace)
+	match := regex.ReplaceAllString(str, blankSpace)
 	rs := strings.Split(match, blankSpace)
 	var result []string
 	for _, v := range rs {
@@ -316,43 +245,43 @@ func SnakeCase(s string) string {
 }
 
 // splitWordsToLower 将将字符串拆分为多个字符串,并转小写
-func splitWordsToLower(s string) []string {
+func splitWordsToLower(str string) []string {
 	var result []string
-	upperIndexes := upperIndex(s)
+	upperIndexes := upperIndex(str)
 	l := len(upperIndexes)
 	if upperIndexes == nil || l == 0 {
-		if s != "" {
-			result = append(result, s)
+		if str != "" {
+			result = append(result, str)
 		}
 		return result
 	}
 	for i := 0; i < l; i++ {
 		if i < l-1 {
-			result = append(result, strings.ToLower(s[upperIndexes[i]:upperIndexes[i+1]]))
+			result = append(result, strings.ToLower(str[upperIndexes[i]:upperIndexes[i+1]]))
 		} else {
-			result = append(result, strings.ToLower(s[upperIndexes[i]:]))
+			result = append(result, strings.ToLower(str[upperIndexes[i]:]))
 		}
 	}
 	return result
 }
 
 // upperIndex 得到一个 int 切片，其中元素都是字符串的大写 char 索引
-func upperIndex(s string) []int {
+func upperIndex(str string) []int {
 	var result []int
-	for i := 0; i < len(s); i++ {
-		if 64 < s[i] && s[i] < 91 {
+	for i := 0; i < len(str); i++ {
+		if 64 < str[i] && str[i] < 91 {
 			result = append(result, i)
 		}
 	}
-	if len(s) > 0 && result != nil && result[0] != 0 {
+	if len(str) > 0 && result != nil && result[0] != 0 {
 		result = append([]int{0}, result...)
 	}
 	return result
 }
 
 // Reverse 返回字符顺序与给定字符串相反的字符串
-func Reverse(s string) string {
-	r := []rune(s)
+func Reverse(str string) string {
+	r := []rune(str)
 	for i, j := 0, len(r)-1; i < j; i, j = i+1, j-1 {
 		r[i], r[j] = r[j], r[i]
 	}
@@ -360,124 +289,80 @@ func Reverse(s string) string {
 }
 
 // Quote 返回双引号的字符串
-func Quote(s string) string {
-	return strconv.Quote(s)
+func Quote(str string) string {
+	return strconv.Quote(str)
 }
 
 // AddSlashes 为字符串添加斜线。
-func AddSlashes(s string) string {
-	if ln := len(s); ln == 0 {
+func AddSlashes(str string) string {
+	if ln := len(str); ln == 0 {
 		return ""
 	}
-
 	var buf bytes.Buffer
-	for _, char := range s {
+	for _, char := range str {
 		switch char {
 		case '\'', '"', '\\':
 			buf.WriteRune('\\')
 		}
 		buf.WriteRune(char)
 	}
-
 	return buf.String()
 }
 
 // StripSlashes 去除字符串的斜杠。
-func StripSlashes(s string) string {
-	ln := len(s)
+func StripSlashes(str string) string {
+	ln := len(str)
 	if ln == 0 {
 		return ""
 	}
-
 	var skip bool
 	var buf bytes.Buffer
-
-	for i, char := range s {
+	for i, char := range str {
 		if skip {
 			skip = false
 		} else if char == '\\' {
-			if i+1 < ln && s[i+1] == '\\' {
+			if i+1 < ln && str[i+1] == '\\' {
 				skip = true
 			}
 			continue
 		}
 		buf.WriteRune(char)
 	}
-
 	return buf.String()
 }
 
 // Trim  如果 cutSet 为空，将去除空格。
-func Trim(s string, cutSet ...string) string {
+func Trim(str string, cutSet ...string) string {
 	if ln := len(cutSet); ln > 0 && cutSet[0] != "" {
 		if ln == 1 {
-			return strings.Trim(s, cutSet[0])
+			return strings.Trim(str, cutSet[0])
 		}
-
-		return strings.Trim(s, strings.Join(cutSet, ""))
+		return strings.Trim(str, strings.Join(cutSet, ""))
 	}
-
-	return strings.TrimSpace(s)
+	return strings.TrimSpace(str)
 }
 
 // LTrim 字符串中的字符。如果 cutSet 为空，将去除空格。
-func LTrim(s string, cutSet ...string) string {
+func LTrim(str string, cutSet ...string) string {
 	if ln := len(cutSet); ln > 0 && cutSet[0] != "" {
 		if ln == 1 {
-			return strings.TrimLeft(s, cutSet[0])
+			return strings.TrimLeft(str, cutSet[0])
 		}
 
-		return strings.TrimLeft(s, strings.Join(cutSet, ""))
+		return strings.TrimLeft(str, strings.Join(cutSet, ""))
 	}
-
-	return strings.TrimLeft(s, " ")
+	return strings.TrimLeft(str, " ")
 }
 
 // RTrim 字符串中的字符。如果 cutSet 为空，将去除空格。
-func RTrim(s string, cutSet ...string) string {
+func RTrim(str string, cutSet ...string) string {
 	if ln := len(cutSet); ln > 0 && cutSet[0] != "" {
 		if ln == 1 {
-			return strings.TrimRight(s, cutSet[0])
+			return strings.TrimRight(str, cutSet[0])
 		}
-		return strings.TrimRight(s, strings.Join(cutSet, ""))
+		return strings.TrimRight(str, strings.Join(cutSet, ""))
 	}
-
-	return strings.TrimRight(s, " ")
-}
-
-// UpperEnglishWord 将每个单词的第一个字符更改为大写
-func UpperEnglishWord(s string) string {
-	if s == "" {
-		return s
-	}
-	if len(s) == 1 {
-		return strings.ToUpper(s)
-	}
-	inWord := true
-	buf := make([]byte, 0, len(s))
-	i := 0
-	rs := []rune(s)
-	if RuneIsLower(rs[i]) {
-		buf = append(buf, []byte(string(unicode.ToUpper(rs[i])))...)
-	} else {
-		buf = append(buf, []byte(string(rs[i]))...)
-	}
-	for j := i + 1; j < len(rs); j++ {
-		if !RuneIsWord(rs[i]) && RuneIsWord(rs[j]) {
-			inWord = false
-		}
-		if RuneIsLower(rs[j]) && !inWord {
-			buf = append(buf, []byte(string(unicode.ToUpper(rs[j])))...)
-			inWord = true
-		} else {
-			buf = append(buf, []byte(string(rs[j]))...)
-		}
-		if RuneIsWord(rs[j]) {
-			inWord = true
-		}
-		i++
-	}
-	return string(buf)
+	return strings.TrimRight(str, " ")
 }
 
 // PosFlag type
@@ -491,73 +376,108 @@ const (
 )
 
 // Padding 填充字符串。
-func Padding(s, pad string, length int, pos PosFlag) string {
-	diff := len(s) - length
+func Padding(str, pad string, length int, pos PosFlag) string {
+	diff := len(str) - length
 	if diff >= 0 { // do not need padding.
-		return s
+		return str
 	}
-
 	if pad == "" || pad == " " {
 		mark := ""
 		if pos == PosRight { // to right
 			mark = "-"
 		}
-
 		// padding left: "%7s", padding right: "%-7s"
-		tpl := fmt.Sprintf("%s%d", mark, length)
-		return fmt.Sprintf(`%`+tpl+`s`, s)
+		tpl := fmt.Sprintf("%str%d", mark, length)
+		return fmt.Sprintf(`%`+tpl+`str`, str)
 	}
-
 	if pos == PosRight { // to right
-		return s + Repeat(pad, -diff)
+		return str + Repeat(pad, -diff)
 	}
-	return Repeat(pad, -diff) + s
+	return Repeat(pad, -diff) + str
 }
 
 // PadLeft 左边填充一个字符串
-func PadLeft(s, pad string, length int) string {
-	return Padding(s, pad, length, PosLeft)
+func PadLeft(str, pad string, length int) string {
+	return Padding(str, pad, length, PosLeft)
 }
 
 // PadRight 右边填充一个字符串
-func PadRight(s, pad string, length int) string {
-	return Padding(s, pad, length, PosRight)
+func PadRight(str, pad string, length int) string {
+	return Padding(str, pad, length, PosRight)
 }
 
 // Repeat 重复一个字符串
-func Repeat(s string, times int) string {
+func Repeat(str string, times int) string {
 	if times <= 0 {
 		return ""
 	}
 	if times == 1 {
-		return s
+		return str
 	}
-
 	ss := make([]string, 0, times)
 	for i := 0; i < times; i++ {
-		ss = append(ss, s)
+		ss = append(ss, str)
 	}
-
 	return strings.Join(ss, "")
 }
 
 // Resize 按给定的长度和对齐设置调整字符串的大小。填充空间。
-func Resize(s string, length int, align PosFlag) string {
-	diff := len(s) - length
+func Resize(str string, length int, align PosFlag) string {
+	diff := len(str) - length
 	if diff >= 0 { // do not need padding.
-		return s
+		return str
 	}
-
 	if align == PosMiddle {
-		strLn := len(s)
+		strLn := len(str)
 		padLn := (length - strLn) / 2
 		padStr := string(make([]byte, padLn))
-
 		if diff := length - padLn*2; diff > 0 {
-			s += " "
+			str += " "
 		}
-		return padStr + s + padStr
+		return padStr + str + padStr
 	}
+	return Padding(str, " ", length, align)
+}
 
-	return Padding(s, " ", length, align)
+// ChineseCount 中文字符统计
+func ChineseCount(str string) int {
+	var count int
+	for _, v := range str {
+		if unicode.Is(unicode.Han, v) {
+			count++
+		}
+	}
+	return count
+}
+
+// GetFirstChineseChar 返回第一个中文字符
+func GetFirstChineseChar(str string) string {
+	for _, r := range str {
+		if unicode.Is(unicode.Scripts["Han"], r) || (regexp.MustCompile("[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001\uff1f\u300a\u300b]").MatchString(string(r))) {
+			return fmt.Sprintf("%c", r)
+		}
+	}
+	return ""
+}
+
+// GetChineseChar 过滤返回中文字符切片
+func GetChineseChar(str string) []string {
+	ss := make([]string, 0)
+	for _, r := range str {
+		if unicode.Is(unicode.Scripts["Han"], r) || (regexp.MustCompile("[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001\uff1f\u300a\u300b]").MatchString(string(r))) {
+			ss = append(ss, fmt.Sprintf("%c", r))
+		}
+	}
+	return ss
+}
+
+// GetChineseString 过滤返回中文字符
+func GetChineseString(str string) string {
+	var ss string
+	for _, r := range str {
+		if unicode.Is(unicode.Scripts["Han"], r) || (regexp.MustCompile("[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001\uff1f\u300a\u300b]").MatchString(string(r))) {
+			ss += fmt.Sprintf("%c", r)
+		}
+	}
+	return ss
 }

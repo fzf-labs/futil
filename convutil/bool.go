@@ -18,7 +18,7 @@ var (
 )
 
 // Bool converts `any` to bool.
-func Bool(any interface{}) (bool, error) {
+func Bool(any any) (bool, error) {
 	switch b := any.(type) {
 	case nil:
 		return false, nil

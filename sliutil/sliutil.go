@@ -16,13 +16,23 @@ import (
 )
 
 // Contain 检查值是否在切片中
-func Contain[T comparable](slice []T, value T) bool {
-	set := make(map[T]struct{}, len(slice))
-	for _, v := range slice {
-		set[v] = struct{}{}
+func Contain[T comparable](slice []T, target T) bool {
+	for _, item := range slice {
+		if item == target {
+			return true
+		}
 	}
-	_, ok := set[value]
-	return ok
+	return false
+}
+
+// ContainBy  检查切片是否包含满足条件的元素
+func ContainBy[T any](slice []T, predicate func(item T) bool) bool {
+	for _, item := range slice {
+		if predicate(item) {
+			return true
+		}
+	}
+	return false
 }
 
 // ContainSubSlice 检查切片是否包含子切片
@@ -32,40 +42,23 @@ func ContainSubSlice[T comparable](slice, subSlice []T) bool {
 			return false
 		}
 	}
-
 	return true
 }
 
 // Chunk 创建一个元素切片，按照 size 的长度分成几组。
 func Chunk[T any](slice []T, size int) [][]T {
 	var result [][]T
-
 	if len(slice) == 0 || size <= 0 {
 		return result
 	}
-
-	length := len(slice)
-	if size == 1 || size >= length {
-		for _, v := range slice {
-			var tmp []T
-			tmp = append(tmp, v)
-			result = append(result, tmp)
+	for _, item := range slice {
+		l := len(result)
+		if l == 0 || len(result[l-1]) == size {
+			result = append(result, []T{})
+			l++
 		}
-		return result
+		result[l-1] = append(result[l-1], item)
 	}
-
-	// divide slice equally
-	divideNum := length/size + 1
-	for i := 0; i < divideNum; i++ {
-		if i == divideNum-1 {
-			if len(slice[i*size:]) > 0 {
-				result = append(result, slice[i*size:])
-			}
-		} else {
-			result = append(result, slice[i*size:(i+1)*size])
-		}
-	}
-
 	return result
 }
 
@@ -791,115 +784,11 @@ func Shuffle[T any](slice []T) []T {
 	return result
 }
 
-// Sort 排序
-// Sort的工作原理类似于Sort . slicetype()。然而，不像sort。SliceType返回的切片将被重新分配，以不修改输入切片。
-func Sort[T constraints.Ordered](ss []T) []T {
-	// 避免分配。如果有一个或更少的元素，它已经排序。
-	if len(ss) < 2 {
-		return ss
-	}
-
-	sorted := make([]T, len(ss))
-	copy(sorted, ss)
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i] < sorted[j]
-	})
-
-	return sorted
-}
-
-// SortUsing SortUsing的工作原理类似于sort.Slice。然而，不像sort。切片返回的切片将被重新分配，以不修改输入切片。
-func SortUsing[T any](ss []T, less func(a, b T) bool) []T {
-	if len(ss) < 2 {
-		return ss
-	}
-
-	sorted := make([]T, len(ss))
-	copy(sorted, ss)
-	sort.Slice(sorted, func(i, j int) bool {
-		return less(sorted[i], sorted[j])
-	})
-
-	return sorted
-}
-
 // AreSorted 如果切片已经排序，AreSorted将返回true。它是一个包装器
 func AreSorted[T constraints.Ordered](ss []T) bool {
 	return sort.SliceIsSorted(ss, func(i, j int) bool {
 		return ss[i] < ss[j]
 	})
-}
-
-// SortByField 按字段返回排序的切片
-// 切片元素应为结构体，字段类型应为 int、uint、string 或 bool
-// 默认sortType是升序（asc），如果是降序，设置sortType为desc
-func SortByField(slice any, field string, sortType ...string) error {
-	sv := sliceValue(slice)
-	t := sv.Type().Elem()
-
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	if t.Kind() != reflect.Struct {
-		return fmt.Errorf("data type %T not support, shuld be struct or pointer to struct", slice)
-	}
-
-	// Find the field.
-	sf, ok := t.FieldByName(field)
-	if !ok {
-		return fmt.Errorf("field name %s not found", field)
-	}
-	var desc = "desc"
-	// Create a less function based on the field's kind.
-	var compare func(a, b reflect.Value) bool
-	switch sf.Type.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		if len(sortType) > 0 && sortType[0] == desc {
-			compare = func(a, b reflect.Value) bool { return a.Int() > b.Int() }
-		} else {
-			compare = func(a, b reflect.Value) bool { return a.Int() < b.Int() }
-		}
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		if len(sortType) > 0 && sortType[0] == desc {
-			compare = func(a, b reflect.Value) bool { return a.Uint() > b.Uint() }
-		} else {
-			compare = func(a, b reflect.Value) bool { return a.Uint() < b.Uint() }
-		}
-	case reflect.Float32, reflect.Float64:
-		if len(sortType) > 0 && sortType[0] == desc {
-			compare = func(a, b reflect.Value) bool { return a.Float() > b.Float() }
-		} else {
-			compare = func(a, b reflect.Value) bool { return a.Float() < b.Float() }
-		}
-	case reflect.String:
-		if len(sortType) > 0 && sortType[0] == desc {
-			compare = func(a, b reflect.Value) bool { return a.String() > b.String() }
-		} else {
-			compare = func(a, b reflect.Value) bool { return a.String() < b.String() }
-		}
-	case reflect.Bool:
-		if len(sortType) > 0 && sortType[0] == desc {
-			compare = func(a, b reflect.Value) bool { return a.Bool() && !b.Bool() }
-		} else {
-			compare = func(a, b reflect.Value) bool { return !a.Bool() && b.Bool() }
-		}
-	default:
-		return fmt.Errorf("field type %s not supported", sf.Type)
-	}
-
-	sort.Slice(slice, func(i, j int) bool {
-		a := sv.Index(i)
-		b := sv.Index(j)
-		if t.Kind() == reflect.Ptr {
-			a = a.Elem()
-			b = b.Elem()
-		}
-		a = a.FieldByIndex(sf.Index)
-		b = b.FieldByIndex(sf.Index)
-		return compare(a, b)
-	})
-
-	return nil
 }
 
 // Without 创建一个不包括所有给定值的切片

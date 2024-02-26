@@ -7,6 +7,14 @@ import (
 	"github.com/bytedance/sonic"
 )
 
+// IsJSON 检查字符串是否是有效的JSON
+func IsJSON(v string) bool {
+	if v == "" {
+		return false
+	}
+	return json.Valid([]byte(v))
+}
+
 // Marshal 编码
 func Marshal(v any) ([]byte, error) {
 	return sonic.Marshal(v)

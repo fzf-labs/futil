@@ -1,7 +1,6 @@
 package validutil
 
 import (
-	"encoding/json"
 	"net"
 	"net/url"
 	"reflect"
@@ -12,98 +11,31 @@ import (
 )
 
 // IsZero 检查是否是零值
-func IsZero(i ...any) bool {
-	for _, j := range i {
-		v := reflect.ValueOf(j)
-		if isZero(v) {
-			return true
-		}
+func IsZero(any any) bool {
+	if any == nil {
+		return true
 	}
-	return false
-}
-
-func isZero(v reflect.Value) bool {
+	v := reflect.ValueOf(any)
 	switch v.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Slice:
-		return v.IsNil()
 	case reflect.Invalid:
 		return true
+	case reflect.String, reflect.Array:
+		return v.Len() == 0
+	case reflect.Map, reflect.Slice:
+		return v.Len() == 0 || v.IsNil()
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr, reflect.Func:
+		return v.IsNil()
 	default:
-		z := reflect.Zero(v.Type())
-		return reflect.DeepEqual(z.Interface(), v.Interface())
+		return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 	}
-}
-
-// IsAlpha 检查字符串是否只包含字母 (a-zA-Z)
-func IsAlpha(str string) bool {
-	return regexp.MustCompile(`^[a-zA-Z]+$`).MatchString(str)
-}
-
-// IsAllUpper 检查字符串是否都是大写字母 A-Z
-func IsAllUpper(str string) bool {
-	for _, r := range str {
-		if !unicode.IsUpper(r) {
-			return false
-		}
-	}
-	return str != ""
-}
-
-// IsAllLower 检查字符串是否都是小写字母 a-z
-func IsAllLower(str string) bool {
-	for _, r := range str {
-		if !unicode.IsLower(r) {
-			return false
-		}
-	}
-	return str != ""
-}
-
-// ContainUpper 检查字符串是否至少包含一个大写字母 A-Z
-func ContainUpper(str string) bool {
-	for _, r := range str {
-		if unicode.IsUpper(r) && unicode.IsLetter(r) {
-			return true
-		}
-	}
-	return false
-}
-
-// ContainLower 检查字符串是否至少包含一个小写字母 a-z
-func ContainLower(str string) bool {
-	for _, r := range str {
-		if unicode.IsLower(r) && unicode.IsLetter(r) {
-			return true
-		}
-	}
-	return false
-}
-
-// ContainLetter 检查字符串是否至少包含一个字母
-func ContainLetter(str string) bool {
-	return regexp.MustCompile(`[a-zA-Z]`).MatchString(str)
-}
-
-// IsJSON 检查字符串是否是有效的 JSON
-func IsJSON(str string) bool {
-	var js json.RawMessage
-	return json.Unmarshal([]byte(str), &js) == nil
-}
-
-// IsNumberStr 检查字符串是否可以转换为数字。
-func IsNumberStr(s string) bool {
-	return IsIntStr(s) || IsFloatStr(s)
-}
-
-// IsFloatStr 检查字符串是否可以转换为浮点数。
-func IsFloatStr(str string) bool {
-	_, e := strconv.ParseFloat(str, 64)
-	return e == nil
-}
-
-// IsIntStr check if the string can convert to a integer.
-func IsIntStr(str string) bool {
-	return regexp.MustCompile(`^[\+-]?\d+$`).MatchString(str)
 }
 
 // IsIP 检查字符串是否为 IP 地址。
@@ -131,8 +63,8 @@ func IsIPV6(ipStr string) bool {
 }
 
 // IsPort 检查字符串是否是有效的网络端口。
-func IsPort(str string) bool {
-	if i, err := strconv.ParseInt(str, 10, 64); err == nil && i > 0 && i < 65536 {
+func IsPort(port int) bool {
+	if port > 0 && port <= 65535 {
 		return true
 	}
 	return false
@@ -153,13 +85,7 @@ func IsURL(str string) bool {
 	if u.Host == "" && (u.Path != "" && !strings.Contains(u.Path, ".")) {
 		return false
 	}
-
 	return regexp.MustCompile(`^((ftp|http|https?):\/\/)?(\S+(:\S*)?@)?((([1-9]\d?|1\d\d|2[01]\d|22[0-3])(\.(1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.([0-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(([a-zA-Z0-9]+([-\.][a-zA-Z0-9]+)*)|((www\.)?))?(([a-z\x{00a1}-\x{ffff}0-9]+-?-?)*[a-z\x{00a1}-\x{ffff}0-9]+)(?:\.([a-z\x{00a1}-\x{ffff}]{2,}))?))(:(\d{1,5}))?((\/|\?|#)[^\s]*)?$`).MatchString(str)
-}
-
-// IsDNS 检查字符串是否为 dns。
-func IsDNS(dns string) bool {
-	return regexp.MustCompile(`^[a-zA-Z]([a-zA-Z0-9\-]+\.?)*[a-zA-Z0-9]$`).MatchString(dns)
 }
 
 // IsEmail check if the string is a email address.
@@ -167,28 +93,7 @@ func IsEmail(email string) bool {
 	return regexp.MustCompile(`\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`).MatchString(email)
 }
 
-// ContainChinese check if the string contain mandarin chinese.
-func ContainChinese(s string) bool {
-	return regexp.MustCompile("[\u4e00-\u9fa5]").MatchString(s)
-}
-
-// IsBase64 检查字符串是否为 base64 字符串。
-func IsBase64(base64 string) bool {
-	return regexp.MustCompile(`^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{4})$`).MatchString(base64)
-}
-
-// IsEmptyString 检查字符串是否为空。
-func IsEmptyString(str string) bool {
-	return str == ""
-}
-
-// IsRegexMatch 检查字符串是否与正则表达式匹配
-func IsRegexMatch(str, regex string) bool {
-	reg := regexp.MustCompile(regex)
-	return reg.MatchString(str)
-}
-
-// IsPhone 手机验证
+// IsPhoneTight 手机验证
 // Phone format validation.
 //
 //  1. China Mobile:
@@ -210,9 +115,8 @@ func IsRegexMatch(str, regex string) bool {
 //
 //  6. 2018:
 //     16x, 19x
-func IsPhone(phone string) bool {
+func IsPhoneTight(phone string) bool {
 	regular := `^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^16[\d]{9}$|^17[0,2,3,5,6,7,8]{1}\d{8}$|^18[\d]{9}$|^19[\d]{9}$`
-
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(phone)
 }
@@ -221,7 +125,6 @@ func IsPhone(phone string) bool {
 // 13, 14, 15, 16, 17, 18, 19 can pass the verification (只要满足 13、14、15、16、17、18、19开头的11位数字都可以通过验证)
 func IsPhoneLoose(phone string) bool {
 	regular := `^1(3|4|5|6|7|8|9)\d{9}$`
-
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(phone)
 }
@@ -229,7 +132,6 @@ func IsPhoneLoose(phone string) bool {
 // IsTelephone 固话校验
 func IsTelephone(telephone string) bool {
 	regular := `^((\d{3,4})|\d{3,4}-)?\d{7,8}$`
-
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(telephone)
 }
@@ -237,7 +139,6 @@ func IsTelephone(telephone string) bool {
 // IsPostalCode 邮政编码
 func IsPostalCode(postalCode string) bool {
 	regular := `^\d{6}$`
-
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(postalCode)
 }
@@ -291,7 +192,6 @@ func IsResidentID(id string) bool {
 // IsQQ 腾讯qq校验
 func IsQQ(qq string) bool {
 	regular := `^[1-9][0-9]{4,}$`
-
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(qq)
 }
@@ -301,7 +201,6 @@ func IsQQ(qq string) bool {
 // Starting with letter, containing only numbers or underscores, length between 6 and 18.
 func IsPassport(p string) bool {
 	regular := `^[a-zA-Z]{1}\w{5,17}$`
-
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(p)
 }
@@ -347,12 +246,6 @@ func IsStrongPassword(password string, length int) bool {
 	}
 
 	return num && lower && upper && special
-}
-
-// IsUsername 用户名校验，4到16位（字母，数字，下划线，减号）
-func IsUsername(p string) bool {
-	regular1 := `^[a-zA-Z0-9_-]{4,16}$`
-	return regexp.MustCompile(regular1).MatchString(p)
 }
 
 // IsDomain 校验域名

@@ -10,25 +10,7 @@ import (
 )
 
 var (
-	tInt        int           = 1
-	tInt8       int8          = 1
-	tInt16      int16         = 1
-	tInt32      int32         = 1
-	tInt64      int64         = 1
-	tUint       uint          = 1
-	tUint8      uint8         = 1
-	tUint16     uint16        = 1
-	tUint32     uint32        = 1
-	tUint64     uint64        = 1
-	tFloat32    float32       = 1
-	tFloat64    float64       = 1
-	tBool       bool          = true
-	tString     string        = "1"
-	tBytes      []byte        = []byte("1")
-	tTime       time.Time     = time.Now()
-	tDuration   time.Duration = time.Second
-	tJsonNumber               = json.Number("1")
-	tStruct     struct{}
+	tInt int = 1
 )
 
 func TestBool(t *testing.T) {
@@ -42,179 +24,220 @@ func TestBool(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "case 1",
+			name: "case nil",
 			args: args{
 				any: nil,
 			},
-			want: false,
+			want:    false,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 2",
+			name: "case int",
 			args: args{
-				any: tInt,
+				any: int(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 3",
+			name: "case int8",
 			args: args{
-				any: tInt8,
+				any: int8(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 4",
+			name: "case int16",
 			args: args{
-				any: tInt16,
+				any: int16(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 5",
+			name: "case int32",
 			args: args{
-				any: tInt32,
+				any: int32(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 6",
+			name: "case int64",
 			args: args{
-				any: tInt64,
+				any: int64(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 7",
+			name: "case uint",
 			args: args{
-				any: tUint,
+				any: uint(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 8",
+			name: "case uint8",
 			args: args{
-				any: tUint8,
+				any: uint8(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 9",
+			name: "case uint16",
 			args: args{
-				any: tUint16,
+				any: uint16(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 10",
+			name: "case uint32",
 			args: args{
-				any: tUint32,
+				any: uint32(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 11",
+			name: "case uint64",
 			args: args{
-				any: tUint64,
+				any: uint64(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 12",
+			name: "case float32",
 			args: args{
-				any: tFloat32,
+				any: float32(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 13",
+			name: "case float64",
 			args: args{
-				any: tFloat64,
+				any: float64(8),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 14",
+			name: "case bool",
 			args: args{
-				any: tBool,
+				any: true,
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 15",
+			name: "case string",
 			args: args{
-				any: tString,
+				any: string("8"),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 16",
+			name: "case bytes",
 			args: args{
-				any: tBytes,
+				any: []byte("8"),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 17",
+			name: "case time",
 			args: args{
-				any: tTime,
+				any: time.Now(),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 18",
+			name: "case time",
 			args: args{
-				any: tDuration,
+				any: time.Second,
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
-			name: "case 19",
+			name: "case json.Number",
 			args: args{
-				any: tJsonNumber,
+				any: json.Number(""),
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "case 20",
 			args: args{
 				any: "no",
 			},
-			want: false,
+			want:    false,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "case 21",
 			args: args{
 				any: []string{"1", "2"},
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "case 22",
 			args: args{
 				any: [2]string{"1", "2"},
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "case 23",
 			args: args{
 				any: map[string]string{"1": "1", "2": "2"},
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "case 24",
 			args: args{
 				any: &tInt,
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "case 25",
 			args: args{
-				any: tStruct,
+				any: struct{}{},
 			},
-			want: true,
+			want:    true,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "case 26",
+			args: args{
+				any: "no",
+			},
+			want:    false,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "case 26",
+			args: args{
+				any: []byte("no"),
+			},
+			want:    false,
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {

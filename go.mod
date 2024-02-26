@@ -6,7 +6,7 @@ require (
 	github.com/bytedance/sonic v1.10.2
 	github.com/fzf-labs/fpkg v1.8.7
 	github.com/gabriel-vasile/mimetype v1.4.3
-	github.com/golang-module/carbon/v2 v2.3.8
+	github.com/golang-module/carbon/v2 v2.3.9
 	github.com/google/uuid v1.6.0
 	github.com/imroc/req/v3 v3.42.3
 	github.com/klauspost/compress v1.17.5

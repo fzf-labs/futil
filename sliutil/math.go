@@ -11,7 +11,6 @@ func Sum[T constraints.Integer | constraints.Float](ss []T) (sum T) {
 	for _, s := range ss {
 		sum += s
 	}
-
 	return
 }
 
@@ -20,17 +19,7 @@ func Average[T constraints.Integer | constraints.Float](ss []T) float64 {
 	if l := len(ss); l > 0 {
 		return float64(Sum(ss)) / float64(l)
 	}
-
 	return 0
-}
-
-// Abs 返回绝对值。
-func Abs[T constraints.Integer | constraints.Float](val T) T {
-	if val < 0 {
-		return -val
-	}
-
-	return val
 }
 
 // Max 是最大值，或零。
@@ -38,14 +27,12 @@ func Max[T constraints.Ordered](ss []T) (min T) {
 	if len(ss) == 0 {
 		return
 	}
-
 	min = ss[0]
 	for _, s := range ss {
 		if s > min {
 			min = s
 		}
 	}
-
 	return
 }
 
@@ -131,12 +118,10 @@ func Product[T constraints.Integer | constraints.Float](ss []T) (product T) {
 	if len(ss) == 0 {
 		return
 	}
-
 	product = ss[0]
 	for _, s := range ss[1:] {
 		product *= s
 	}
-
 	return
 }
 
@@ -145,14 +130,11 @@ func StandardDeviation[T constraints.Integer | constraints.Float](ss []T) float6
 	if len(ss) == 0 {
 		return 0.0
 	}
-
 	avg := Average(ss)
-
 	var sd float64
 	for i := range ss {
 		sd += math.Pow(float64(ss[i])-avg, 2)
 	}
 	sd = math.Sqrt(sd / float64(len(ss)))
-
 	return sd
 }
