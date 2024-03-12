@@ -1,181 +1,57 @@
 package cryptutil
 
 import (
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/pem"
-	"fmt"
-	"strings"
-
-	"github.com/pkg/errors"
+	"github.com/golang-module/dongle"
+	"github.com/golang-module/dongle/openssl"
 )
 
-// GenRsaKey RSA公钥私钥产生
-func GenRsaKey() (prvKey, pubKey []byte) {
-	// 生成私钥文件
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		panic(err)
+// defines key format enum type.
+// 定义密钥格式枚举类型
+type keyFormat string
+
+// key format constants.
+// 密钥格式常量
+const (
+	PKCS1 keyFormat = "pkcs1"
+	PKCS8 keyFormat = "pkcs8"
+)
+
+func GenRsaKey(keyFormat keyFormat) (publicKey, privateKey []byte) {
+	switch keyFormat {
+	case PKCS1:
+		return openssl.RSA.GenKeyPair(openssl.PKCS1, 1024)
+	case PKCS8:
+		return openssl.RSA.GenKeyPair(openssl.PKCS8, 2048)
 	}
-	derStream := x509.MarshalPKCS1PrivateKey(privateKey)
-	block := &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: derStream,
-	}
-	prvKey = pem.EncodeToMemory(block)
-	publicKey := &privateKey.PublicKey
-	derPkix, err := x509.MarshalPKIXPublicKey(publicKey)
-	if err != nil {
-		panic(err)
-	}
-	block = &pem.Block{
-		Type:  "PUBLIC KEY",
-		Bytes: derPkix,
-	}
-	pubKey = pem.EncodeToMemory(block)
 	return
 }
 
-// RsaEncrypt 公钥加密
-func RsaEncrypt(data, pubKey []byte) []byte {
-	// 解密pem格式的公钥
-	block, _ := pem.Decode(pubKey)
-	if block == nil {
-		panic(errors.New("public key error"))
-	}
-	// 解析公钥
-	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		panic(err)
-	}
-	// 类型断言
-	pub := pubInterface.(*rsa.PublicKey)
-	// 加密
-	ciphertext, err := rsa.EncryptPKCS1v15(rand.Reader, pub, data)
-	if err != nil {
-		panic(err)
-	}
-	return ciphertext
+func RsaEncrypt(data string, key []byte) string {
+	return dongle.Encrypt.FromString(data).ByRsa(key).ToHexString()
 }
 
-// RsaDecrypt 私钥解密
-func RsaDecrypt(ciphertext, prvKey []byte) []byte {
-	// 获取私钥
-	block, _ := pem.Decode(prvKey)
-	if block == nil {
-		panic(errors.New("private key error!"))
-	}
-	// 解析PKCS1格式的私钥
-	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		panic(err)
-	}
-	// 解密
-	data, err := rsa.DecryptPKCS1v15(rand.Reader, priv, ciphertext)
-	if err != nil {
-		panic(err)
-	}
-	return data
-}
-
-// RsaSignWithSha256 签名
-func RsaSignWithSha256(data, keyBytes []byte) []byte {
-	h := sha256.New()
-	h.Write(data)
-	hashed := h.Sum(nil)
-	block, _ := pem.Decode(keyBytes)
-	if block == nil {
-		panic(errors.New("private key error"))
-	}
-	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		fmt.Println("ParsePKCS8PrivateKey err", err)
-		panic(err)
-	}
-
-	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed)
-	if err != nil {
-		fmt.Printf("Error from signing: %s\n", err)
-		panic(err)
-	}
-
-	return signature
-}
-
-// RsaVerySignWithSha256 验证
-func RsaVerySignWithSha256(data, signData, keyBytes []byte) bool {
-	block, _ := pem.Decode(keyBytes)
-	if block == nil {
-		panic(errors.New("public key error"))
-	}
-	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		panic(err)
-	}
-
-	hashed := sha256.Sum256(data)
-	err = rsa.VerifyPKCS1v15(pubKey.(*rsa.PublicKey), crypto.SHA256, hashed[:], signData)
-	if err != nil {
-		panic(err)
-	}
-	return true
+func RsaDecrypt(ciphertext string, key []byte) string {
+	return dongle.Decrypt.FromHexString(ciphertext).ByRsa(key).ToString()
 }
 
 // FormatPrivateKey 格式化 普通应用秘钥
-func FormatPrivateKey(privateKey string) (pKey string) {
-	var buffer strings.Builder
-	buffer.WriteString("-----BEGIN RSA PRIVATE KEY-----\n")
-	rawLen := 64
-	keyLen := len(privateKey)
-	raws := keyLen / rawLen
-	temp := keyLen % rawLen
-	if temp > 0 {
-		raws++
+func FormatPrivateKey(keyFormat keyFormat, privateKey []byte) (key []byte) {
+	switch keyFormat {
+	case PKCS1:
+		return openssl.RSA.FormatPrivateKey(openssl.PKCS1, privateKey)
+	case PKCS8:
+		return openssl.RSA.FormatPrivateKey(openssl.PKCS8, privateKey)
 	}
-	start := 0
-	end := start + rawLen
-	for i := 0; i < raws; i++ {
-		if i == raws-1 {
-			buffer.WriteString(privateKey[start:])
-		} else {
-			buffer.WriteString(privateKey[start:end])
-		}
-		buffer.WriteByte('\n')
-		start += rawLen
-		end = start + rawLen
-	}
-	buffer.WriteString("-----END RSA PRIVATE KEY-----\n")
-	pKey = buffer.String()
 	return
 }
 
 // FormatPublicKey 格式化 普通应用公钥
-func FormatPublicKey(publicKey string) (pKey string) {
-	var buffer strings.Builder
-	buffer.WriteString("-----BEGIN PUBLIC KEY-----\n")
-	rawLen := 64
-	keyLen := len(publicKey)
-	raws := keyLen / rawLen
-	temp := keyLen % rawLen
-	if temp > 0 {
-		raws++
+func FormatPublicKey(keyFormat keyFormat, privateKey []byte) (key []byte) {
+	switch keyFormat {
+	case PKCS1:
+		return openssl.RSA.FormatPublicKey(openssl.PKCS1, privateKey)
+	case PKCS8:
+		return openssl.RSA.FormatPublicKey(openssl.PKCS8, privateKey)
 	}
-	start := 0
-	end := start + rawLen
-	for i := 0; i < raws; i++ {
-		if i == raws-1 {
-			buffer.WriteString(publicKey[start:])
-		} else {
-			buffer.WriteString(publicKey[start:end])
-		}
-		buffer.WriteByte('\n')
-		start += rawLen
-		end = start + rawLen
-	}
-	buffer.WriteString("-----END PUBLIC KEY-----\n")
-	pKey = buffer.String()
 	return
 }

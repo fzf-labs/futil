@@ -1,5 +1,4 @@
-//nolint:gosec
-package strutil
+package randomutil
 
 import (
 	"math/rand"
@@ -13,19 +12,29 @@ const (
 	AlphaNumUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
 
-// RandSeed 随机数种子
-func RandSeed() *rand.Rand {
+// RandomSeed 随机数种子
+func RandomSeed() *rand.Rand {
 	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-// Random 随机字符串
-func Random(n int) string {
+// RandomInt 在 [min, max) 处返回一个随机整数int
+func RandomInt(min, max int) int {
+	return min + RandomSeed().Intn(max-min)
+}
+
+// RandomInt64 在 [min, max) 处返回一个随机整数int64
+func RandomInt64(min, max int64) int64 {
+	return min + RandomSeed().Int63n(max-min)
+}
+
+// RandomStr 随机字符串
+func RandomStr(n int) string {
 	cs := make([]byte, n)
 	str := Numbers + AlphaNumLower + AlphaNumUpper
 	sl := len(str)
 	for i := 0; i < n; i++ {
 		// 1607400451937462000
-		idx := RandSeed().Intn(sl) // 0 - 25
+		idx := RandomSeed().Intn(sl) // 0 - 25
 		cs[i] = str[idx]
 	}
 	return string(cs)
@@ -45,7 +54,7 @@ func RandomChars(n int, char ...string) string {
 	sl := len(str)
 	for i := 0; i < n; i++ {
 		// 1607400451937462000
-		idx := RandSeed().Intn(sl) // 0 - 25
+		idx := RandomSeed().Intn(sl) // 0 - 25
 		cs[i] = str[idx]
 	}
 	return string(cs)
@@ -58,7 +67,7 @@ func RandomNumber(n int) string {
 	sl := len(str)
 	for i := 0; i < n; i++ {
 		// 1607400451937462000
-		idx := RandSeed().Intn(sl) // 0 - 25
+		idx := RandomSeed().Intn(sl) // 0 - 25
 		cs[i] = str[idx]
 	}
 	return string(cs)

@@ -8,19 +8,18 @@ import (
 )
 
 // Shuffle the slice.
-// Play: https://go.dev/play/p/YHvhnWGU3Ge
-func Shuffle[T any](slice []T) []T {
+func Shuffle[T any](collection []T) []T {
 	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(slice), func(i, j int) {
-		slice[i], slice[j] = slice[j], slice[i]
+	rand.Shuffle(len(collection), func(i, j int) {
+		collection[i], collection[j] = collection[j], collection[i]
 	})
-	return slice
+	return collection
 }
 
 // IsAsc 检查切片是否按升序排列。
-func IsAsc[T constraints.Ordered](slice []T) bool {
-	for i := 1; i < len(slice); i++ {
-		if slice[i-1] > slice[i] {
+func IsAsc[T constraints.Ordered](collection []T) bool {
+	for i := 1; i < len(collection); i++ {
+		if collection[i-1] > collection[i] {
 			return false
 		}
 	}
@@ -28,9 +27,9 @@ func IsAsc[T constraints.Ordered](slice []T) bool {
 }
 
 // IsDesc 检查切片是否按降序排列。
-func IsDesc[T constraints.Ordered](slice []T) bool {
-	for i := 1; i < len(slice); i++ {
-		if slice[i-1] < slice[i] {
+func IsDesc[T constraints.Ordered](collection []T) bool {
+	for i := 1; i < len(collection); i++ {
+		if collection[i-1] < collection[i] {
 			return false
 		}
 	}
@@ -38,14 +37,14 @@ func IsDesc[T constraints.Ordered](slice []T) bool {
 }
 
 // IsSorted 检查切片是否排序(升序或降序)。
-func IsSorted[T constraints.Ordered](slice []T) bool {
-	return IsAsc(slice) || IsDesc(slice)
+func IsSorted[T constraints.Ordered](collection []T) bool {
+	return IsAsc(collection) || IsDesc(collection)
 }
 
 // IsSortedByKey 检查切片是否按迭代函数排序。
-func IsSortedByKey[T any, K constraints.Ordered](slice []T, iteratee func(item T) K) bool {
-	size := len(slice)
-	isAscending := func(data []T) bool {
+func IsSortedByKey[T any, K constraints.Ordered](collection []T, iteratee func(item T) K) bool {
+	size := len(collection)
+	isAsc := func(data []T) bool {
 		for i := 0; i < size-1; i++ {
 			if iteratee(data[i]) > iteratee(data[i+1]) {
 				return false
@@ -53,7 +52,7 @@ func IsSortedByKey[T any, K constraints.Ordered](slice []T, iteratee func(item T
 		}
 		return true
 	}
-	isDescending := func(data []T) bool {
+	isDesc := func(data []T) bool {
 		for i := 0; i < size-1; i++ {
 			if iteratee(data[i]) < iteratee(data[i+1]) {
 				return false
@@ -61,5 +60,5 @@ func IsSortedByKey[T any, K constraints.Ordered](slice []T, iteratee func(item T
 		}
 		return true
 	}
-	return isAscending(slice) || isDescending(slice)
+	return isAsc(collection) || isDesc(collection)
 }

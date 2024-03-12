@@ -1,25 +1,31 @@
 package fileutil
 
 import (
-	"archive/zip"
 	"bufio"
-	"bytes"
 	"context"
-	"crypto/sha256"
 	"encoding/csv"
-	"encoding/hex"
 	"fmt"
+	"github.com/gabriel-vasile/mimetype"
 	"io"
-	"io/fs"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
+)
 
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"golang.org/x/text/transform"
+var (
+	// DefaultDirPerm 文件权限
+	DefaultDirPerm   os.FileMode = 0775
+	DefaultFilePerm  os.FileMode = 0665
+	OnlyReadFilePerm os.FileMode = 0444
+
+	// DefaultFileFlags 创建文件 只写 追加
+	DefaultFileFlags = os.O_CREATE | os.O_WRONLY | os.O_APPEND
+	CoverFileFlags   = os.O_CREATE | os.O_WRONLY | os.O_TRUNC
+	// OnlyReadFileFlags 只读
+	OnlyReadFileFlags = os.O_RDONLY
 )
 
 // ************************************************************
@@ -31,10 +37,10 @@ func Mkdir(dirPath string) error {
 	return os.MkdirAll(dirPath, DefaultDirPerm)
 }
 
-// CreateDir 批量创建文件夹
-func CreateDir(dirs ...string) error {
+// BatchMkDir 批量创建文件夹
+func BatchMkDir(dirs ...string) error {
 	for _, v := range dirs {
-		if !FileExists(v) {
+		if !IsFileExists(v) {
 			err := os.MkdirAll(v, os.ModePerm)
 			if err != nil {
 				return err
@@ -48,22 +54,21 @@ func CreateDir(dirs ...string) error {
 	return nil
 }
 
-// ReadDirAll 读取目录  fmt 打印
-// example ReadDirAll("/Users/why/Desktop/go/test", 0)
-func ReadDirAll(p string, curHer int) {
+// PrintDirAll 打印目录
+// example PrintDirAll("/Users/why/Desktop/go/test", 0)
+func PrintDirAll(p string, curHer int) {
 	fileInfos, err := os.ReadDir(p)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
 	for _, info := range fileInfos {
 		if info.IsDir() {
 			for tmpHer := curHer; tmpHer > 0; tmpHer-- {
 				fmt.Printf("|\t")
 			}
 			fmt.Println(info.Name(), "\\")
-			ReadDirAll(p+"/"+info.Name(), curHer+1)
+			PrintDirAll(p+"/"+info.Name(), curHer+1)
 		} else {
 			for tmpHier := curHer; tmpHier > 0; tmpHier-- {
 				fmt.Printf("|\t")
@@ -99,9 +104,9 @@ func ReadAllFileToSli(p string) ([]FileInfo, error) {
 	return res, nil
 }
 
-// ReadAllDirToMap 读取所有的文件形成一个map
+// ReadAllDirToMap 读取所有的文件夹形成一个map
 func ReadAllDirToMap(p string) (map[string]FileInfo, error) {
-	infos := make(map[string]FileInfo, 0)
+	infos := make(map[string]FileInfo)
 	err := newReadAllFileInfo().doDir(p, infos)
 	if err != nil {
 		return nil, err
@@ -237,7 +242,7 @@ func readDeepFile(p string, deepNow, deep int, files map[string]DeepFileInfo) er
 	if deepNow > deep {
 		return nil
 	}
-	if !PathExists(p) {
+	if !IsPathExists(p) {
 		return nil
 	}
 	fileInfos, err := os.ReadDir(p)
@@ -505,7 +510,7 @@ func Rename(src, dst string) error {
 
 // Remove 删除命名文件或 (空) 目录。
 func Remove(fPath string) error {
-	if PathExists(fPath) {
+	if IsPathExists(fPath) {
 		return os.Remove(fPath)
 	}
 	return nil
@@ -521,148 +526,6 @@ func RemoveExt(p string) string {
 // ************************************************************
 //	other operates
 // ************************************************************
-
-// Zip compresses the specified files or dirs to zip archive.
-// If a path is a dir don't need to specify the trailing path separator.
-// For example calling Zip("archive.zip", "dir", "csv/baz.csv") will get archive.zip and the content of which is
-// dir
-// |-- foo.txt
-// |-- bar.txt
-// baz.csv
-func Zip(zipPath string, paths ...string) error {
-	// create zip file
-	if err := os.MkdirAll(filepath.Dir(zipPath), os.ModePerm); err != nil {
-		return err
-	}
-	archive, err := os.Create(zipPath)
-	if err != nil {
-		return err
-	}
-	defer archive.Close()
-
-	// new zip writer
-	zipWriter := zip.NewWriter(archive)
-	defer zipWriter.Close()
-
-	// traverse the file or directory
-	for _, srcPath := range paths {
-		// remove the trailing path separator if path is a directory
-		srcPath = strings.TrimSuffix(srcPath, string(os.PathSeparator))
-
-		// visit all the files or directories in the tree
-		err = filepath.Walk(srcPath, func(path string, info fs.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			// create a local file header
-			header, err := zip.FileInfoHeader(info)
-			if err != nil {
-				return err
-			}
-
-			// set compression
-			header.Method = zip.Deflate
-
-			// set relative path of a file as the header name
-			header.Name, err = filepath.Rel(filepath.Dir(srcPath), path)
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				header.Name += string(os.PathSeparator)
-			}
-
-			// create writer for the file header and save content of the file
-			headerWriter, err := zipWriter.CreateHeader(header)
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				return nil
-			}
-			f, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			_, err = io.Copy(headerWriter, f)
-			return err
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// Unzip decompresses a zip file to specified directory.
-// Note that the destination directory don't need to specify the trailing path separator.
-func Unzip(zipPath, dstDir string) error {
-	// open zip file
-	reader, err := zip.OpenReader(zipPath)
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-	for _, file := range reader.File {
-		if err := unzipFile(file, dstDir); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func unzipFile(file *zip.File, dstDir string) error {
-	var decodeName string
-	if file.Flags == 0 {
-		// 如果标致位是0  则是默认的本地编码   默认为gbk
-		i := bytes.NewReader([]byte(file.Name))
-		decoder := transform.NewReader(i, simplifiedchinese.GB18030.NewDecoder())
-		content, _ := io.ReadAll(decoder)
-		decodeName = string(content)
-	} else {
-		// 如果标志为是 1 << 11也就是 2048  则是utf-8编码
-		decodeName = file.Name
-	}
-	// create the directory of file
-	filePath := path.Join(dstDir, decodeName)
-	if file.FileInfo().IsDir() {
-		if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
-			return err
-		}
-		return nil
-	}
-	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		return err
-	}
-
-	// open the file
-	r, err := file.Open()
-	if err != nil {
-		return err
-	}
-	defer r.Close()
-
-	// create the file
-	w, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer w.Close()
-
-	// save the decompressed file content
-	for {
-		_, err = io.CopyN(w, r, 1024)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-	}
-	return nil
-}
 
 // DownloadFile 会将url下载到本地文件，它会在下载时写入，而不是将整个文件加载到内存中。
 func DownloadFile(url, filePath string) error {
@@ -688,8 +551,8 @@ func DownloadFile(url, filePath string) error {
 }
 
 func FilePrefix(filename string) string {
-	filenameall := path.Base(filename)
-	return filenameall[0 : len(filenameall)-len(path.Ext(filename))]
+	name := path.Base(filename)
+	return name[0 : len(name)-len(path.Ext(filename))]
 }
 
 // Move 移动文件
@@ -706,12 +569,33 @@ func Ext(p string) string {
 	return strings.ToLower(filepath.Ext(p))
 }
 
-// Sha256 文件Sha256值
-func Sha256(file io.Reader) (string, error) {
-	hash := sha256.New()
-	_, err := io.Copy(hash, file)
+// MimeType 获取文件 Mime 类型名称。例如“image/png”
+func MimeType(p string) (mime string) {
+	file, err := os.Open(p)
 	if err != nil {
-		return "", err
+		return
 	}
-	return hex.EncodeToString(hash.Sum(nil)), nil
+	return ReaderMimeType(file)
+}
+
+// ReaderMimeType 获取文件 Mime 类型名称
+func ReaderMimeType(r io.Reader) (mime string) {
+	// 512 嗅探长度，用于检测文件 mime 类型
+	var buf [512]byte
+	n, _ := io.ReadFull(r, buf[:])
+	if n == 0 {
+		return ""
+	}
+	return http.DetectContentType(buf[:n])
+}
+
+// ReaderMimeTypeAndExt 获取文件的mime和ext后缀(使用扩展包)
+func ReaderMimeTypeAndExt(r io.Reader) (mime, ext string) {
+	reader, err := mimetype.DetectReader(r)
+	if err != nil {
+		return "", ""
+	}
+	mime = reader.String()
+	ext = reader.Extension()
+	return
 }

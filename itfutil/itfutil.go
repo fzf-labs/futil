@@ -1,21 +1,8 @@
 package itfutil
 
 import (
-	"bytes"
-	"encoding/gob"
 	"reflect"
 )
-
-// ToBytes 转 bytes
-func ToBytes(key any) ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(key)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
 
 // IsEmpty 检查给定的“值”是否为空。
 // 如果 `value` 位于：0、nil、false、""、len(slicemapchan) == 0，则返回 true，否则返回 false。
@@ -117,6 +104,8 @@ func IsEmpty(value any) bool {
 			if rv.IsNil() {
 				return true
 			}
+		default:
+			return false
 		}
 	}
 	return false
@@ -124,7 +113,7 @@ func IsEmpty(value any) bool {
 
 // IsNil 检查给定的“值”是否为零。
 // 如果给定的 value 是也指向指针的 pinter 类型，则参数 traceSource 用于跟踪源变量。如果 traceSource 为真时源为 nil，则返回 nil。请注意，它可能会使用反射功能，这会稍微影响性能。
-func IsNil(value any, traceSource ...bool) bool {
+func IsNil(value any) bool {
 	if value == nil {
 		return true
 	}
@@ -142,21 +131,18 @@ func IsNil(value any, traceSource ...bool) bool {
 		reflect.Interface,
 		reflect.UnsafePointer:
 		return !rv.IsValid() || rv.IsNil()
-
 	case reflect.Ptr:
-		if len(traceSource) > 0 && traceSource[0] {
-			for rv.Kind() == reflect.Ptr {
-				rv = rv.Elem()
-			}
-			if !rv.IsValid() {
-				return true
-			}
-			if rv.Kind() == reflect.Ptr {
-				return rv.IsNil()
-			}
-		} else {
-			return !rv.IsValid() || rv.IsNil()
+		for rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
 		}
+		if !rv.IsValid() {
+			return true
+		}
+		if rv.Kind() == reflect.Ptr {
+			return rv.IsNil()
+		}
+	default:
+		return false
 	}
 	return false
 }

@@ -7,14 +7,11 @@ import (
 	"text/scanner"
 )
 
-// `(?s:` enable match multi line
-var jsonMLComments = regexp.MustCompile(`(?s:/\*.*?\*/\s*)`)
-
 // StripComments 去除 JSON 字符串的注释
 func StripComments(src string) string {
 	// multi line comments
 	if strings.Contains(src, "/*") {
-		src = jsonMLComments.ReplaceAllString(src, "")
+		src = regexp.MustCompile(`(?s:/\*.*?\*/\s*)`).ReplaceAllString(src, "")
 	}
 
 	// single line comments

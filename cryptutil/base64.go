@@ -1,14 +1,15 @@
 package cryptutil
 
-import "encoding/base64"
+import (
+	"github.com/golang-module/dongle"
+)
 
-// Base64StdEncode 使用 base64 编码对字符串进行编码
-func Base64StdEncode(s string) string {
-	return base64.StdEncoding.EncodeToString([]byte(s))
+// Base64Encode 使用 base64 编码对字符串进行编码
+func Base64Encode(s string) string {
+	return dongle.Encode.FromString(s).ByBase64().ToString()
 }
 
-// Base64StdDecode 解码 base64 编码的字符串
-func Base64StdDecode(s string) string {
-	b, _ := base64.StdEncoding.DecodeString(s)
-	return string(b)
+// Base64Decode 解码 base64 编码的字符串
+func Base64Decode(s string) string {
+	return dongle.Decode.FromString(s).ByBase64().ToString()
 }

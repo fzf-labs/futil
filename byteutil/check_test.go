@@ -147,3 +147,43 @@ func TestIsNumChar(t *testing.T) {
 		})
 	}
 }
+
+func TestIsAlpha(t *testing.T) {
+	type args struct {
+		b byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "case true",
+			args: args{
+				b: 'A',
+			},
+			want: true,
+		},
+		{
+			name: "case true",
+			args: args{
+				b: 'a',
+			},
+			want: true,
+		},
+		{
+			name: "case false",
+			args: args{
+				b: '0',
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsAlpha(tt.args.b); got != tt.want {
+				t.Errorf("IsAlpha() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

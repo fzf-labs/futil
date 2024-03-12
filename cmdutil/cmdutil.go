@@ -22,3 +22,14 @@ func ExecCommand(command string) (stdout, stderr string, err error) {
 	stdout = strings.Trim(stdout, "\n")
 	return
 }
+
+// ExecCmd 命令和返回输出。eq: ExecCmd("ls", []string{"-al"})
+func ExecCmd(binName string, args []string, workDir ...string) (string, error) {
+	// create a new Cmd instance
+	cmd := exec.Command(binName, args...)
+	if len(workDir) > 0 {
+		cmd.Dir = workDir[0]
+	}
+	bs, err := cmd.Output()
+	return string(bs), err
+}
