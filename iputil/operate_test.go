@@ -10,6 +10,7 @@ import (
 
 func TestGetPublicIP(t *testing.T) {
 	ip := GetPublicIP()
+	fmt.Println(ip)
 	assert.True(t, ip != "")
 }
 
@@ -18,6 +19,7 @@ func TestGetPublicIPByHTTP(t *testing.T) {
 	if err != nil {
 		return
 	}
+	fmt.Println(ip)
 	assert.True(t, ip != "")
 	assert.Equal(t, nil, err)
 }
