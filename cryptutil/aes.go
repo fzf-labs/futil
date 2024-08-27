@@ -53,10 +53,10 @@ func NewAesCipher(mode, padding, key, iv string) (*dongle.Cipher, error) {
 
 // AesEncrypt 使用 AES 加密算法加密数据。
 func AesEncrypt(cipher *dongle.Cipher, data string) string {
-	return dongle.Encrypt.FromString(data).ByAes(cipher).ToRawString()
+	return dongle.Encrypt.FromString(data).ByAes(cipher).ToHexString()
 }
 
 // AesDecrypt 使用 AES 加密算法解密数据。
 func AesDecrypt(cipher *dongle.Cipher, data string) string {
-	return dongle.Decrypt.FromRawString(data).ByAes(cipher).ToString() // hello world
+	return dongle.Decrypt.FromHexString(data).ByAes(cipher).ToString()
 }
