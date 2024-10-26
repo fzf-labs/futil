@@ -13,7 +13,7 @@ func TestGenUUID(t *testing.T) {
 
 func TestGenShortID(t *testing.T) {
 	shortID, err := GenShortID()
-	assert.Equal(t, len(shortID) > 0, true)
+	assert.Equal(t, shortID != "", true)
 	assert.Equal(t, err, nil)
 }
 

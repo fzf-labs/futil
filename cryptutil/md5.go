@@ -5,15 +5,18 @@ import (
 	"bufio"
 	"crypto/md5"
 	"fmt"
-	"github.com/golang-module/dongle"
 	"io"
 	"os"
+
+	"github.com/golang-module/dongle"
 )
 
+// Md5ToHex 返回字符串的 md5 值，并转换为十六进制字符串
 func Md5ToHex(data string) string {
 	return dongle.Encrypt.FromString(data).ByMd5().ToHexString()
 }
 
+// Md5ToBase64 返回字符串的 md5 值，并转换为 base64 字符串
 func Md5ToBase64(data string) string {
 	return dongle.Encrypt.FromString(data).ByMd5().ToBase64String()
 }

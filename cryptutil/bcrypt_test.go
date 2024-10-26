@@ -1,6 +1,9 @@
 package cryptutil
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestCompare(t *testing.T) {
 	type args struct {
@@ -56,5 +59,71 @@ func TestEncrypt(t *testing.T) {
 				t.Errorf("Encrypt() got = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestBcryptSign(t *testing.T) {
+	tests := []struct {
+		name string
+		data string
+		want string
+	}{
+		{
+			name: "Simple string",
+			data: "Hello, World!",
+			want: "$2a$10$",
+		},
+		{
+			name: "Complex string",
+			data: "BcryptSign 测试 !@#$%^&*()_+",
+			want: "$2a$10$",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := BcryptSign(tt.data)
+			if !strings.HasPrefix(got, tt.want) {
+				t.Errorf("BcryptSign() = %v, want prefix %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBcryptVerify(t *testing.T) {
+	tests := []struct {
+		name string
+		data string
+		want bool
+	}{
+		{
+			name: "Simple string",
+			data: "Hello, World!",
+			want: true,
+		},
+		{
+			name: "Complex string",
+			data: "BcryptVerify 测试 !@#$%^&*()_+",
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sign := BcryptSign(tt.data)
+			if got := BcryptVerify(sign, tt.data); got != tt.want {
+				t.Errorf("BcryptVerify() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBcryptVerifyFail(t *testing.T) {
+	originalData := "Hello, World!"
+	sign := BcryptSign(originalData)
+
+	modifiedData := "Hello, World"
+	if got := BcryptVerify(sign, modifiedData); got {
+		t.Errorf("BcryptVerify() = %v, want false for modified data", got)
 	}
 }

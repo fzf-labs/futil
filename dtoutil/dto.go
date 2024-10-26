@@ -2,6 +2,7 @@ package dto
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/copier"
@@ -31,7 +32,10 @@ func TimeToTimeStampPb() copier.TypeConverter {
 		SrcType: time.Time{},
 		DstType: &timestamppb.Timestamp{},
 		Fn: func(src interface{}) (interface{}, error) {
-			t := src.(time.Time)
+			t, ok := src.(time.Time)
+			if !ok {
+				return nil, fmt.Errorf("src is not a time.Time")
+			}
 			return timestamppb.New(t), nil
 		},
 	}
@@ -43,7 +47,10 @@ func TimeToString() copier.TypeConverter {
 		SrcType: time.Time{},
 		DstType: copier.String,
 		Fn: func(src interface{}) (interface{}, error) {
-			t := src.(time.Time)
+			t, ok := src.(time.Time)
+			if !ok {
+				return nil, fmt.Errorf("src is not a time.Time")
+			}
 			return t.Format("2006-01-02 15:04:05"), nil
 		},
 	}
@@ -55,19 +62,25 @@ func GormDeletedAtToTimeStampPb() copier.TypeConverter {
 		SrcType: gorm.DeletedAt{},
 		DstType: &timestamppb.Timestamp{},
 		Fn: func(src interface{}) (interface{}, error) {
-			t := src.(gorm.DeletedAt)
+			t, ok := src.(gorm.DeletedAt)
+			if !ok {
+				return nil, fmt.Errorf("src is not a gorm.DeletedAt")
+			}
 			return timestamppb.New(t.Time), nil
 		},
 	}
 }
 
-// GormDeletedAtToString gorm.DeletedAt to *timestamppb.Timestamp
+// GormDeletedAtToString gorm.DeletedAt to string
 func GormDeletedAtToString() copier.TypeConverter {
 	return copier.TypeConverter{
 		SrcType: gorm.DeletedAt{},
-		DstType: &timestamppb.Timestamp{},
+		DstType: copier.String,
 		Fn: func(src interface{}) (interface{}, error) {
-			t := src.(gorm.DeletedAt)
+			t, ok := src.(gorm.DeletedAt)
+			if !ok {
+				return nil, fmt.Errorf("src is not a gorm.DeletedAt")
+			}
 			return t.Time.Format("2006-01-02 15:04:05"), nil
 		},
 	}
@@ -79,19 +92,25 @@ func SQLNullTimeToTimeStampPb() copier.TypeConverter {
 		SrcType: sql.NullTime{},
 		DstType: &timestamppb.Timestamp{},
 		Fn: func(src interface{}) (interface{}, error) {
-			t := src.(sql.NullTime)
+			t, ok := src.(sql.NullTime)
+			if !ok {
+				return nil, fmt.Errorf("src is not a sql.NullTime")
+			}
 			return timestamppb.New(t.Time), nil
 		},
 	}
 }
 
-// SQLNullTimeToString sql.NullTime to *timestamppb.Timestamp
+// SQLNullTimeToString sql.NullTime to string
 func SQLNullTimeToString() copier.TypeConverter {
 	return copier.TypeConverter{
 		SrcType: sql.NullTime{},
-		DstType: &timestamppb.Timestamp{},
+		DstType: copier.String,
 		Fn: func(src interface{}) (interface{}, error) {
-			t := src.(sql.NullTime)
+			t, ok := src.(sql.NullTime)
+			if !ok {
+				return nil, fmt.Errorf("src is not a sql.NullTime")
+			}
 			return t.Time.Format("2006-01-02 15:04:05"), nil
 		},
 	}

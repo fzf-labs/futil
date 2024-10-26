@@ -175,7 +175,7 @@ func Map[T any, U any](collection []T, iteratee func(index int, item T) U) []U {
 }
 
 // Replace 返回切片的副本，其中将旧的前n个不重叠的实例替换为新实例。
-func Replace[T comparable](collection []T, old T, new T, n int) []T {
+func Replace[T comparable](collection []T, old, new T, n int) []T {
 	result := make([]T, len(collection))
 	copy(result, collection)
 
@@ -190,7 +190,7 @@ func Replace[T comparable](collection []T, old T, new T, n int) []T {
 }
 
 // ReplaceAll 返回切片的副本，其中所有不重叠的old实例替换为new实例。
-func ReplaceAll[T comparable](collection []T, old T, new T) []T {
+func ReplaceAll[T comparable](collection []T, old, new T) []T {
 	return Replace(collection, old, new, -1)
 }
 

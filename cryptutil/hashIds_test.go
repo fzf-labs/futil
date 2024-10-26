@@ -1,49 +1,59 @@
 package cryptutil
 
 import (
-	"fmt"
 	"testing"
 )
 
-func Test_hash_HashidsEncode(t *testing.T) {
-	type fields struct {
-		secret string
-		length int
+func TestHashidsEncodeDecode(t *testing.T) {
+	secret := "mysecret"
+
+	length := 8
+	hash := NewHashids(secret, length)
+
+	params := []int{1, 2, 3}
+	encoded, err := hash.HashidsEncode(params)
+	if err != nil {
+		t.Fatalf("HashidsEncode failed: %v", err)
 	}
-	type args struct {
-		params []int
+
+	decoded, err := hash.HashidsDecode(encoded)
+	if err != nil {
+		t.Fatalf("HashidsDecode failed: %v", err)
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "1",
-			fields: fields{
-				secret: "12346",
-				length: 6,
-			},
-			args: args{params: []int{1}},
-		},
+
+	if len(decoded) != len(params) {
+		t.Fatalf("Decoded length mismatch: got %d, want %d", len(decoded), len(params))
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &Hash{
-				secret: tt.fields.secret,
-				length: tt.fields.length,
-			}
-			got, err := h.HashidsEncode(tt.args.params)
-			fmt.Println(got)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("HashidsEncode() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("HashidsEncode() got = %v, want %v", got, tt.want)
-			}
-		})
+
+	for i, v := range decoded {
+		if v != params[i] {
+			t.Errorf("Decoded value mismatch at index %d: got %d, want %d", i, v, params[i])
+		}
+	}
+}
+
+func TestHashidsEncodeError(t *testing.T) {
+	secret := "mysecret"
+	length := 8
+	hash := NewHashids(secret, length)
+
+	// Test with an empty slice
+	params := []int{}
+	_, err := hash.HashidsEncode(params)
+	if err == nil {
+		t.Error("Expected error for empty params, got nil")
+	}
+}
+
+func TestHashidsDecodeError(t *testing.T) {
+	secret := "mysecret"
+	length := 8
+	hash := NewHashids(secret, length)
+
+	// Test with an invalid hash string
+	invalidHash := "invalid"
+	_, err := hash.HashidsDecode(invalidHash)
+	if err == nil {
+		t.Error("Expected error for invalid hash, got nil")
 	}
 }

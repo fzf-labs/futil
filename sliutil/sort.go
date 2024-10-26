@@ -1,18 +1,32 @@
 package sliutil
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"encoding/binary"
 	"time"
 
 	"golang.org/x/exp/constraints"
 )
 
-// Shuffle the slice.
+// Shuffle the slice using crypto/rand for better randomization
 func Shuffle[T any](collection []T) []T {
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(collection), func(i, j int) {
+	n := len(collection)
+	if n <= 1 {
+		return collection
+	}
+
+	for i := n - 1; i > 0; i-- {
+		var buf [8]byte
+		_, err := rand.Read(buf[:])
+		if err != nil {
+			// 如果加密随机数生成失败，回退到时间种子
+			j := int(time.Now().UnixNano() % int64(i+1))
+			collection[i], collection[j] = collection[j], collection[i]
+			continue
+		}
+		j := int(binary.BigEndian.Uint64(buf[:]) % uint64(i+1))
 		collection[i], collection[j] = collection[j], collection[i]
-	})
+	}
 	return collection
 }
 

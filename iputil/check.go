@@ -4,11 +4,11 @@ import "net"
 
 // IsInternalIP 检测 IP 地址是否是内网地址
 func IsInternalIP(ip string) bool {
-	netIp := net.ParseIP(ip)
-	if netIp.IsLoopback() {
+	netIP := net.ParseIP(ip)
+	if netIP.IsLoopback() {
 		return true
 	}
-	ip4 := netIp.To4()
+	ip4 := netIP.To4()
 	if ip4 == nil {
 		return false
 	}

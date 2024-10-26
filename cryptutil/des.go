@@ -58,5 +58,5 @@ func DesEncrypt(cipher *dongle.Cipher, data string) string {
 
 // DesDecrypt 使用 Des 加密算法解密数据。
 func DesDecrypt(cipher *dongle.Cipher, data string) string {
-	return dongle.Decrypt.FromRawString(data).ByDes(cipher).ToString() // hello world
+	return dongle.Decrypt.FromRawString(data).ByDes(cipher).ToString()
 }

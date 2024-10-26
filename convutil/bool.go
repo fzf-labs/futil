@@ -76,9 +76,9 @@ func Bool(any any) (bool, error) {
 		case reflect.Ptr:
 			return !rv.IsNil(), nil
 		case reflect.Map:
-			fallthrough
+			return rv.Len() != 0, nil
 		case reflect.Array:
-			fallthrough
+			return rv.Len() != 0, nil
 		case reflect.Slice:
 			return rv.Len() != 0, nil
 		case reflect.Struct:

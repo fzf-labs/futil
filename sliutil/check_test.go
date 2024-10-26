@@ -173,7 +173,7 @@ func TestEvery(t *testing.T) {
 			name: "case true",
 			args: args[int]{
 				collection: []int{1, 2, 3, 4, 5},
-				predicate:  func(index int, item int) bool { return item > 0 },
+				predicate:  func(_ int, item int) bool { return item > 0 },
 			},
 			want: true,
 		},
@@ -181,7 +181,7 @@ func TestEvery(t *testing.T) {
 			name: "case false",
 			args: args[int]{
 				collection: []int{1, 2, 3, 4, 5},
-				predicate:  func(index int, item int) bool { return item > 2 },
+				predicate:  func(_ int, item int) bool { return item > 2 },
 			},
 			want: false,
 		},
@@ -210,7 +210,7 @@ func TestNone(t *testing.T) {
 			name: "case true",
 			args: args[int]{
 				collection: []int{1, 2, 3, 4, 5},
-				predicate: func(index int, item int) bool {
+				predicate: func(_ int, item int) bool {
 					return item > 5
 				},
 			},
@@ -220,7 +220,7 @@ func TestNone(t *testing.T) {
 			name: "case false",
 			args: args[int]{
 				collection: []int{1, 2, 3, 4, 5},
-				predicate: func(index int, item int) bool {
+				predicate: func(_ int, item int) bool {
 					return item > 4
 				},
 			},
@@ -251,7 +251,7 @@ func TestSome(t *testing.T) {
 			name: "case true",
 			args: args[int]{
 				collection: []int{1, 2, 3, 4, 5},
-				predicate:  func(index int, item int) bool { return item > 4 },
+				predicate:  func(_ int, item int) bool { return item > 4 },
 			},
 			want: true,
 		},
@@ -259,7 +259,7 @@ func TestSome(t *testing.T) {
 			name: "case false",
 			args: args[int]{
 				collection: []int{1, 2, 3, 4, 5},
-				predicate:  func(index int, item int) bool { return item > 6 },
+				predicate:  func(_ int, item int) bool { return item > 6 },
 			},
 			want: false,
 		},

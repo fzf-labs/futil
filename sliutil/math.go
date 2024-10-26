@@ -23,31 +23,33 @@ func Average[T constraints.Integer | constraints.Float](collection []T) float64 
 }
 
 // Max 是最大值，或零。
-func Max[T constraints.Ordered](collection []T) (min T) {
+func Max[T constraints.Ordered](collection []T) T {
+	var maxItem T
 	if len(collection) == 0 {
-		return
+		return maxItem
 	}
-	min = collection[0]
+	maxItem = collection[0]
 	for _, s := range collection {
-		if s > min {
-			min = s
+		if s > maxItem {
+			maxItem = s
 		}
 	}
-	return
+	return maxItem
 }
 
 // Min 是最小值，或零。
-func Min[T constraints.Ordered](collection []T) (min T) {
+func Min[T constraints.Ordered](collection []T) T {
+	var minItem T
 	if len(collection) == 0 {
-		return
+		return minItem
 	}
-	min = collection[0]
+	minItem = collection[0]
 	for _, s := range collection {
-		if s < min {
-			min = s
+		if s < minItem {
+			minItem = s
 		}
 	}
-	return
+	return minItem
 }
 
 // Count 返回给定项在片中出现的次数。
@@ -133,7 +135,6 @@ func SymmetricDifference[T comparable](collections ...[]T) []T {
 				result = append(result, v)
 			}
 		}
-
 	}
 	return Unique(result)
 }
