@@ -40,7 +40,7 @@ func Mkdir(dirPath string) error {
 // BatchMkDir 批量创建文件夹
 func BatchMkDir(dirs ...string) error {
 	for _, v := range dirs {
-		if !IsFileExists(v) {
+		if !IsPathExists(v) {
 			err := os.MkdirAll(v, os.ModePerm)
 			if err != nil {
 				return err
@@ -520,7 +520,7 @@ func RemoveExt(p string) string {
 	if ext == "" {
 		return p
 	}
-	return strings.TrimRight(p, ext)
+	return strings.TrimSuffix(p, ext)
 }
 
 // ************************************************************

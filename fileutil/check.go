@@ -20,11 +20,6 @@ func IsPathExists(fp string) bool {
 	return true
 }
 
-// IsFileExists 检查文件是否存在。
-func IsFileExists(fp string) bool {
-	return IsFile(fp)
-}
-
 // IsDir 检查是否是目录
 func IsDir(fp string) bool {
 	if fp == "" {

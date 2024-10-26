@@ -33,6 +33,7 @@ func (c *Client) SetTracer(tracer trace.Tracer) {
 					attribute.Int("http.status_code", resp.StatusCode),
 					attribute.String("http.resp.header", resp.HeaderToString()),
 					attribute.String("http.resp.body", resp.String()),
+					attribute.Int64("http.resp.latency", resp.TotalTime().Milliseconds()),
 				)
 			}
 			return

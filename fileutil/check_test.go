@@ -18,37 +18,18 @@ func TestIsPathExists(t *testing.T) {
 			},
 			want: true,
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := IsPathExists(tt.args.fp); got != tt.want {
-				t.Errorf("IsPathExists() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestIsFileExists(t *testing.T) {
-	type args struct {
-		fp string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
 		{
-			name: "case 1",
+			name: "case 2",
 			args: args{
-				fp: "./",
+				fp: "./check",
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsFileExists(tt.args.fp); got != tt.want {
-				t.Errorf("IsFileExists() = %v, want %v", got, tt.want)
+			if got := IsPathExists(tt.args.fp); got != tt.want {
+				t.Errorf("IsPathExists() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -68,7 +49,7 @@ func TestIsDir(t *testing.T) {
 			args: args{
 				fp: "./",
 			},
-			want: false,
+			want: true,
 		},
 	}
 	for _, tt := range tests {
@@ -94,7 +75,7 @@ func TestIsFile(t *testing.T) {
 			args: args{
 				fp: "./check.go",
 			},
-			want: false,
+			want: true,
 		},
 	}
 	for _, tt := range tests {
