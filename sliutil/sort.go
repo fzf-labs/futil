@@ -24,7 +24,8 @@ func Shuffle[T any](collection []T) []T {
 			collection[i], collection[j] = collection[j], collection[i]
 			continue
 		}
-		j := int(binary.BigEndian.Uint64(buf[:]) % uint64(i+1))
+		// Safely convert to avoid integer overflow
+		j := int(binary.BigEndian.Uint64(buf[:]) % uint64(uint(i+1)))
 		collection[i], collection[j] = collection[j], collection[i]
 	}
 	return collection

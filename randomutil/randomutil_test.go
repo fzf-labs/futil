@@ -1,13 +1,10 @@
 package randomutil
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
-)
 
-func TestRandSeed(t *testing.T) {
-	assert.Equal(t, true, RandomSeed().Int() != 0)
-}
+	"github.com/stretchr/testify/assert"
+)
 
 func TestRandomChars(t *testing.T) {
 	assert.Equal(t, true, len(RandomChars(10)) == 10)

@@ -5,15 +5,6 @@ import (
 	"testing"
 )
 
-type TestStruct struct {
-	PublicSlice  []int
-	privateSlice []string
-	NestedStruct *struct {
-		Data []float64
-	}
-	InterfaceField interface{}
-}
-
 type TestInterface interface {
 	DoSomething()
 }

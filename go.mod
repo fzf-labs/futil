@@ -2,8 +2,6 @@ module github.com/fzf-labs/futil
 
 go 1.22.0
 
-toolchain go1.23.2
-
 require (
 	github.com/bytedance/sonic v1.12.1
 	github.com/gabriel-vasile/mimetype v1.4.5
@@ -41,7 +39,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emmansun/gmsm v0.26.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/pprof v0.0.0-20240910150728-a0b0bb1d4134 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect

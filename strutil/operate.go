@@ -273,7 +273,7 @@ func upperIndex(str string) []int {
 			result = append(result, i)
 		}
 	}
-	if len(str) > 0 && result != nil && result[0] != 0 {
+	if str != "" && result != nil && result[0] != 0 {
 		result = append([]int{0}, result...)
 	}
 	return result

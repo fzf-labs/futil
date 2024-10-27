@@ -1,8 +1,9 @@
 package cryptutil
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var cipher, _ = NewAesCipher("CBC", "PKCS7", "1234567890123456", "1234567890123456")

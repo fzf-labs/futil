@@ -1,9 +1,10 @@
 package sliutil
 
 import (
-	"golang.org/x/exp/constraints"
 	"reflect"
 	"testing"
+
+	"golang.org/x/exp/constraints"
 )
 
 func TestAverage(t *testing.T) {

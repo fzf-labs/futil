@@ -2,13 +2,13 @@ package osutil
 
 import (
 	"fmt"
-	"github.com/fzf-labs/futil/cmdutil"
-	"github.com/fzf-labs/futil/iputil"
 	"os"
 	"runtime"
 	"strconv"
 	"time"
 
+	"github.com/fzf-labs/futil/cmdutil"
+	"github.com/fzf-labs/futil/iputil"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/host"

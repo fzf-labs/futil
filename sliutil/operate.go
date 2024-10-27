@@ -2,7 +2,7 @@ package sliutil
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"strings"
 )
 
@@ -68,14 +68,10 @@ func FilterMap[T any, U any](collection []T, iteratee func(index int, item T) (U
 }
 
 // GroupBy 迭代片的元素，每个元素将按标准分组，返回两个片。
-func GroupBy[T any](collection []T, groupFn func(index int, item T) bool) ([]T, []T) {
+func GroupBy[T any](collection []T, groupFn func(index int, item T) bool) (groupA, groupB []T) {
 	if len(collection) == 0 {
-		return make([]T, 0), make([]T, 0)
+		return
 	}
-
-	groupB := make([]T, 0)
-	groupA := make([]T, 0)
-
 	for i, v := range collection {
 		ok := groupFn(i, v)
 		if ok {
@@ -84,8 +80,7 @@ func GroupBy[T any](collection []T, groupFn func(index int, item T) bool) ([]T, 
 			groupB = append(groupB, v)
 		}
 	}
-
-	return groupA, groupB
+	return
 }
 
 // GroupWith 返回由运行slice thru迭代器的每个元素的结果生成的键组成的映射。
@@ -175,13 +170,13 @@ func Map[T any, U any](collection []T, iteratee func(index int, item T) U) []U {
 }
 
 // Replace 返回切片的副本，其中将旧的前n个不重叠的实例替换为新实例。
-func Replace[T comparable](collection []T, old, new T, n int) []T {
+func Replace[T comparable](collection []T, oldItem, newItem T, n int) []T {
 	result := make([]T, len(collection))
 	copy(result, collection)
 
 	for i := range result {
-		if result[i] == old && n != 0 {
-			result[i] = new
+		if result[i] == oldItem && n != 0 {
+			result[i] = newItem
 			n--
 		}
 	}
@@ -190,8 +185,8 @@ func Replace[T comparable](collection []T, old, new T, n int) []T {
 }
 
 // ReplaceAll 返回切片的副本，其中所有不重叠的old实例替换为new实例。
-func ReplaceAll[T comparable](collection []T, old, new T) []T {
-	return Replace(collection, old, new, -1)
+func ReplaceAll[T comparable](collection []T, oldItem, newItem T) []T {
+	return Replace(collection, oldItem, newItem, -1)
 }
 
 // Repeat 创建一个长度为n的切片，其元素参数为“item”。
@@ -501,6 +496,7 @@ func Random[T any](collection []T) (val T, idx int) {
 	if len(collection) == 0 {
 		return val, -1
 	}
-	idx = rand.Intn(len(collection))
+	// Using non-cryptographic random for general utility randomization
+	idx = rand.IntN(len(collection))
 	return collection[idx], idx
 }

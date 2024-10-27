@@ -2,7 +2,6 @@ package timeutil
 
 import (
 	"database/sql"
-	"reflect"
 	"testing"
 	"time"
 
@@ -45,19 +44,7 @@ func TestNowMicrosecondString(t *testing.T) {
 }
 
 func TestNowSQLNullTime(t *testing.T) {
-	tests := []struct {
-		name string
-		want sql.NullTime
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NowSQLNullTime(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NowSQLNullTime() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	assert.Equal(t, true, NowSQLNullTime().Valid)
 }
 
 func TestTimeToDateTimeString(t *testing.T) {
@@ -174,4 +161,28 @@ func TestTimeToDiffForHumans(t *testing.T) {
 func TestStrToTime(t *testing.T) {
 	strToTime := StrToTime("2021-01-01 00:00:00")
 	assert.Equal(t, false, strToTime.IsZero())
+}
+
+func TestRFC3339(t *testing.T) {
+	type args struct {
+		tt time.Time
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "case1",
+			args: args{
+				tt: time.Now(),
+			},
+			want: time.Now().Format(time.RFC3339),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, RFC3339(tt.args.tt), "RFC3339(%v)", tt.args.tt)
+		})
+	}
 }

@@ -46,14 +46,12 @@ func NowString() string {
 
 // NowMillisecondString 转换为当前时间 2021-06-29 23:53:32.010
 func NowMillisecondString() string {
-	now := carbon.Now()
-	return now.ToDateTimeString() + "." + now.Format("u")
+	return carbon.Now().ToDateTimeMilliString()
 }
 
 // NowMicrosecondString 转换为当前时间 2021-06-29 23:53:32.100000
 func NowMicrosecondString() string {
-	now := carbon.Now()
-	return now.ToDateTimeString() + "." + strconv.Itoa(now.Microsecond())
+	return carbon.Now().ToDateTimeMicroString()
 }
 
 // NowSQLNullTime 获取当前时间的sql.NullTime
@@ -134,4 +132,12 @@ func TimeToHumanShow(t time.Time) string {
 // StrToTime 字符串转时间
 func StrToTime(str string) time.Time {
 	return carbon.NewCarbon().Parse(str, carbon.PRC).StdTime()
+}
+
+// RFC3339 格式化时间 RFC3339
+func RFC3339(tt time.Time) string {
+	if tt.IsZero() {
+		return ""
+	}
+	return tt.Format(time.RFC3339)
 }

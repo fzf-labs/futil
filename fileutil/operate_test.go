@@ -134,7 +134,7 @@ func TestReadAllFileToMap(t *testing.T) {
 	}
 
 	for _, file := range files {
-		err := WriteContentCover(file, "test content")
+		err = WriteContentCover(file, "test content")
 		if err != nil {
 			t.Fatalf("Failed to create test file %s: %v", file, err)
 		}

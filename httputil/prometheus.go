@@ -33,7 +33,7 @@ func init() {
 
 // Prometheus 中间件统一记录 Prometheus 指标
 func Prometheus() func(c *req.Client, resp *req.Response) error {
-	return func(c *req.Client, resp *req.Response) error {
+	return func(_ *req.Client, resp *req.Response) error {
 		request := resp.Request
 		code := ""
 		if resp.Response != nil {

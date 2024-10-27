@@ -119,6 +119,9 @@ func TestForEach(t *testing.T) {
 					"a": "1",
 					"b": "2",
 				},
+				iteratee: func(key string, value string) {
+					// do nothing
+				},
 			},
 		},
 	}

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
-	"github.com/gabriel-vasile/mimetype"
 	"io"
 	"net/http"
 	"os"
@@ -13,6 +12,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/gabriel-vasile/mimetype"
 )
 
 var (
